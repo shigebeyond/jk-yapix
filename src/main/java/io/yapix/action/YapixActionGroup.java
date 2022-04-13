@@ -26,7 +26,9 @@ public class YapixActionGroup extends DefaultActionGroup {
 
         // 非java的文件不显示
         VirtualFile file = event.getDataContext().getData(CommonDataKeys.VIRTUAL_FILE);
-        if (file != null && !file.isDirectory() && !"java".equals(file.getExtension())) {
+        if (file != null && !file.isDirectory() &&
+                !"java".equals(file.getExtension())  // java文件
+                && !"kt".equals(file.getExtension())) { // kotlin文件
             event.getPresentation().setVisible(false);
             return;
         }
