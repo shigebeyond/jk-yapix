@@ -31,6 +31,7 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.java</depends>
     <depends>com.intellij.properties</depends>
+    <depends>org.jetbrains.kotlin</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
@@ -53,13 +54,21 @@
 
     <actions>
         <!-- Add your actions here -->
+        <!--主菜单:调用默认类型的上传-->
         <action id="yapix.YapixAction" class="io.yapix.action.MainAction">
+            <!--添加到编辑器弹出菜单下-->
             <add-to-group group-id="EditorLangPopupMenu" anchor="first"/>
             <keyboard-shortcut keymap="$default" first-keystroke="alt u"/>
         </action>
+
+        <!--X菜单分组：多个类型的上传-->
         <group id="yapix.YapixActionGroup" class="io.yapix.action.YapixActionGroup" text="Yapi X" popup="true">
+            <!--添加到编辑器弹出菜单下-->
             <add-to-group group-id="EditorLangPopupMenu" anchor="after" relative-to-action="yapix.YapixAction"/>
+            <!--添加到项目视图弹出菜单下-->
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+
+            <!-- 多个类型的上传菜单 -->
             <action id="yapix.YapiUploadAction" class="io.yapix.process.yapi.YapiUploadAction"/>
             <action id="yapix.Rap2UploadAction" class="io.yapix.process.rap2.Rap2UploadAction"/>
             <action id="yapix.EolinkerUploadAction" class="io.yapix.process.eolinker.EolinkerUploadAction"/>
@@ -69,6 +78,8 @@
             <action id="yapix.CopyAsMarkdownAction" class="io.yapix.process.markdown.CopyAsMarkdownAction"/>
             <action id="yapix.OpenSettings" class="io.yapix.action.OpenSettingsAction" text="Open Settings"/>
         </group>
+
+        <!-- 配置文件转换菜单：过渡支持，协助yapi.xml文件转换.yapi, 未来会移除 -->
         <action id="yapix.ConvertYapiXmlAction" class="io.yapix.action.ConvertYapiXmlAction" text="Convert to .yapix">
             <add-to-group group-id="EditorLangPopupMenu" anchor="first"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
