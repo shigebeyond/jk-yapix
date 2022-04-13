@@ -76,7 +76,7 @@ public abstract class AbstractAction extends AnAction {
         if (!data.shouldHandle()) {
             return;
         }
-        // 1.解析配置
+        // 1.解析.yapix配置
         StepResult<YapixConfig> configResult = resolveConfig(data);
         YapixConfig config = configResult.getData();
         if (!configResult.isContinue()) {
@@ -169,10 +169,10 @@ public abstract class AbstractAction extends AnAction {
     }
 
     /**
-     * 获取配置
+     * 获取.yapix配置
      */
     private StepResult<YapixConfig> resolveConfig(EventData data) {
-        // 配置文件解析
+        // .yapix配置文件解析
         VirtualFile file = YapixConfigUtils.findConfigFile(data.project, data.module);
         if (requiredConfigFile && (file == null || !file.exists())) {
             NotificationUtils.notify(NotificationType.WARNING, "",
