@@ -31,20 +31,8 @@ public class MethodParseData {
      */
     public List<Api> apis;
 
-    private MethodParseData(PsiMethod method) {
+    public MethodParseData(PsiMethod method) {
         this.method = method;
-    }
-
-    public static MethodParseData valid(PsiMethod method) {
-        MethodParseData data = new MethodParseData(method);
-        data.valid = true;
-        return data;
-    }
-
-    public static MethodParseData invalid(PsiMethod method) {
-        MethodParseData data = new MethodParseData(method);
-        data.valid = false;
-        return data;
     }
 
     public List<Api> getApis() {

@@ -32,18 +32,6 @@ public class ClassParseData {
         this.psiClass = psiClass;
     }
 
-    public static ClassParseData valid(PsiClass psiClass) {
-        ClassParseData data = new ClassParseData(psiClass);
-        data.valid = true;
-        return data;
-    }
-
-    public static ClassParseData invalid(PsiClass psiClass) {
-        ClassParseData data = new ClassParseData(psiClass);
-        data.valid = false;
-        return data;
-    }
-
     public List<Api> getApis() {
         if (methodDataList == null || methodDataList.isEmpty()) {
             return Collections.emptyList();

@@ -33,7 +33,8 @@ import io.yapix.config.DefaultConstants;
 import io.yapix.config.YapixConfig;
 import io.yapix.config.YapixConfigUtils;
 import io.yapix.model.Api;
-import io.yapix.parse.ApiParser;
+import io.yapix.parse.CompositeApiParser;
+import io.yapix.parse.IApiParser;
 import io.yapix.parse.model.ClassParseData;
 import io.yapix.parse.model.MethodParseData;
 import java.util.List;
@@ -112,11 +113,11 @@ public abstract class AbstractAction extends AnAction {
      * 解析文档模型数据
      */
     private StepResult<List<Api>> parse(EventData data, YapixConfig config) {
-        ApiParser parser = new ApiParser(data.project, data.module, config);
+        IApiParser parser = new CompositeApiParser(data.project, data.module, config);
         // 1 选中方法
         if (data.selectedMethod != null) {
             MethodParseData methodData = parser.parse(data.selectedMethod);
-            if (!methodData.valid) {
+            if (methodData == null) {
                 NotificationUtils.notifyWarning(DefaultConstants.NAME,
                         "The current method is not a valid api or ignored");
                 return StepResult.stop();
@@ -131,7 +132,7 @@ public abstract class AbstractAction extends AnAction {
         // 2 选中类
         if (data.selectedClass != null) {
             ClassParseData controllerData = parser.parse(data.selectedClass);
-            if (!controllerData.valid) {
+            if (controllerData == null) {
                 NotificationUtils.notifyWarning(DefaultConstants.NAME,
                         "The current class is not a valid controller or ignored");
                 return StepResult.stop();
@@ -155,7 +156,7 @@ public abstract class AbstractAction extends AnAction {
         List<Api> apis = Lists.newLinkedList();
         for (PsiClass controller : controllers) {
             ClassParseData controllerData = parser.parse(controller);
-            if (!controllerData.valid) {
+            if (controllerData == null) {
                 continue;
             }
             if (config.isStrict() && StringUtils.isEmpty(controllerData.declaredCategory)) {
