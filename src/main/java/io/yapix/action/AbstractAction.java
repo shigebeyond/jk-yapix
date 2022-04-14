@@ -22,7 +22,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.PsiClassOwner;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.util.PsiTreeUtil;
 import io.yapix.base.StepResult;
@@ -113,7 +113,7 @@ public abstract class AbstractAction extends AnAction {
      */
     private StepResult<List<Api>> parse(EventData data, YapixConfig config) {
         ApiParser parser = new ApiParser(data.project, data.module, config);
-        // 选中方法
+        // 1 选中方法
         if (data.selectedMethod != null) {
             MethodParseData methodData = parser.parse(data.selectedMethod);
             if (!methodData.valid) {
@@ -128,7 +128,7 @@ public abstract class AbstractAction extends AnAction {
             return StepResult.ok(methodData.apis);
         }
 
-        // 选中类
+        // 2 选中类
         if (data.selectedClass != null) {
             ClassParseData controllerData = parser.parse(data.selectedClass);
             if (!controllerData.valid) {
@@ -143,12 +143,15 @@ public abstract class AbstractAction extends AnAction {
             return StepResult.ok(controllerData.getApis());
         }
 
-        // 批量
-        List<PsiClass> controllers = PsiFileUtils.getPsiClassByFile(data.selectedJavaFiles);
+        // 3 批量： 选中多个包或文件
+        // 获取PsiClass: 从类文件(java/kotlin)中取得controller类
+        List<PsiClass> controllers = PsiFileUtils.getPsiClassByFile(data.selectedClassFiles);
         if (controllers.isEmpty()) {
             NotificationUtils.notifyWarning(DefaultConstants.NAME, "Not found valid controller class");
             return StepResult.stop();
         }
+
+        // 从controller类中提取api接口信息
         List<Api> apis = Lists.newLinkedList();
         for (PsiClass controller : controllers) {
             ClassParseData controllerData = parser.parse(controller);
@@ -309,9 +312,10 @@ public abstract class AbstractAction extends AnAction {
         VirtualFile[] selectedFiles;
 
         /**
-         * 选择的Java文件
+         * 选择的Java/Kotlin文件
          */
-        List<PsiJavaFile> selectedJavaFiles;
+        // List<PsiJavaFile> selectedJavaFiles;
+        List<PsiClassOwner> selectedClassFiles;
 
         /**
          * 选择类
@@ -327,7 +331,7 @@ public abstract class AbstractAction extends AnAction {
          * 是否应当继续解析处理
          */
         public boolean shouldHandle() {
-            return project != null && module != null && (selectedJavaFiles != null || selectedClass != null);
+            return project != null && module != null && (selectedClassFiles != null || selectedClass != null);
         }
 
         /**
@@ -340,7 +344,7 @@ public abstract class AbstractAction extends AnAction {
             data.module = event.getData(LangDataKeys.MODULE);
             data.selectedFiles = event.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY);
             if (data.project != null && data.selectedFiles != null) {
-                data.selectedJavaFiles = PsiFileUtils.getPsiJavaFiles(data.project, data.selectedFiles);
+                data.selectedClassFiles = PsiFileUtils.getPsiClassFiles(data.project, data.selectedFiles);
             }
             Editor editor = event.getDataContext().getData(CommonDataKeys.EDITOR);
             PsiFile editorFile = event.getDataContext().getData(CommonDataKeys.PSI_FILE);

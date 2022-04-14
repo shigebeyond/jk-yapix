@@ -6,7 +6,7 @@ import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.impl.source.PsiClassImpl;
-import com.intellij.psi.impl.source.PsiJavaFileImpl;
+import com.intellij.psi.PsiClassOwner;
 import com.intellij.psi.search.GlobalSearchScope;
 import java.util.Objects;
 
@@ -48,7 +48,7 @@ public class PsiLinkUtils {
                 if (Objects.isNull(psiClassLink)) {
                     //如果是同包情况
                     linkAddress =
-                            ((PsiJavaFileImpl) ((PsiClassImpl) field.getParent()).getContext()).getPackageName() + "."
+                            ((PsiClassOwner) ((PsiClassImpl) field.getParent()).getContext()).getPackageName() + "."
                                     + linkAddress;
                     psiClassLink = JavaPsiFacade.getInstance(project)
                             .findClass(linkAddress, GlobalSearchScope.allScope(project));

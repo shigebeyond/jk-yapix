@@ -53,7 +53,7 @@ public class ApiParser {
     }
 
     /**
-     * 解析接口
+     * 解析方法
      */
     public MethodParseData parse(PsiMethod method) {
         PsiClass psiClass = method.getContainingClass();
@@ -65,7 +65,8 @@ public class ApiParser {
      * 解析接口
      */
     public ClassParseData parse(PsiClass psiClass) {
-        if (!isNeedParseController(psiClass) || findTagByName(psiClass, DocumentTags.Ignore) != null) {
+        if (!isNeedParseController(psiClass)
+                || findTagByName(psiClass, DocumentTags.Ignore) != null) { // 忽略
             return ClassParseData.invalid(psiClass);
         }
 
