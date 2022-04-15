@@ -22,18 +22,13 @@ import io.yapix.parse.util.PsiDocCommentUtils
 abstract class AbstractApiParser(project: Project, module: Module, settings: YapixConfig) : IApiParser {
 
     // 请求解析器
-    protected lateinit var requestParser: IRequestParser
+    protected abstract val requestParser: IRequestParser
 
     // 响应解析器
-    protected lateinit var responseParser: ResponseParser
+    protected val responseParser: ResponseParser = ResponseParser(project, module, settings)
 
     // 解析助手
-    protected lateinit var parseHelper: ParseHelper
-
-    init {
-        responseParser = ResponseParser(project, module, settings)
-        parseHelper = ParseHelper(project, module)
-    }
+    protected val parseHelper: ParseHelper = ParseHelper(project, module)
 
     /**
      * 解析方法

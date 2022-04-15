@@ -1,4 +1,4 @@
-package io.yapix.parse.parser.spring
+package io.yapix.parse.parser.jkmvc
 
 import com.google.gson.Gson
 import com.intellij.openapi.module.Module
@@ -8,47 +8,72 @@ import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiModifier
 import io.yapix.config.YapixConfig
 import io.yapix.model.Api
+import io.yapix.model.HttpMethod
 import io.yapix.parse.constant.DocumentTags
-import io.yapix.parse.constant.SpringConstants
 import io.yapix.parse.model.ControllerApiInfo
 import io.yapix.parse.model.MethodParseData
+import io.yapix.parse.model.PathParseInfo
 import io.yapix.parse.parser.AbstractApiParser
 import io.yapix.parse.parser.IRequestParser
 import io.yapix.parse.util.PathUtils
-import io.yapix.parse.util.PsiAnnotationUtils
 import io.yapix.parse.util.PsiDocCommentUtils
 import org.apache.commons.lang3.StringUtils
-import java.util.stream.Collectors
+import net.jkcode.jkutil.common.lcFirst
+import org.jetbrains.kotlin.j2k.isImported
 
 /**
- * spring Api接口解析器
+ * jkmvc Api接口解析器
  */
-public class SpringApiParser(project: Project, module: Module, settings: YapixConfig) : AbstractApiParser(project, module, settings) {
+public class JkmvcApiParser(project: Project, module: Module, settings: YapixConfig) : AbstractApiParser(project, module, settings) {
 
     companion object {
         private val gson = Gson()
+
+        /**
+         * 忽略的方法
+         */
+        private val ignoreMethods: Array<String> = arrayOf(
+            "before",
+            "after",
+            "hashCode",
+            "toString",
+            "equals"
+        )
     }
 
     // 请求解析器
-    protected override val requestParser: IRequestParser = SpringRequestParser(project, module, settings)
+    protected override val requestParser: IRequestParser = JkmvcRequestParser(project, module, settings)
 
     /**
      * 判断是否是控制类或接口
      */
     override fun isNeedParseController(psiClass: PsiClass): Boolean {
-        // 接口是为了满足接口继承的情况
-        return (psiClass.isInterface
-            || PsiAnnotationUtils.getAnnotation(psiClass, SpringConstants.RestController) != null || PsiAnnotationUtils.getAnnotation(psiClass, SpringConstants.Controller) != null)
+        // 1 以Controller结尾
+        if(!psiClass.qualifiedName!!.endsWith("Controller"))
+            return false
+
+        // 2 逐层对比父类有 net.jkcode.jkmvc.http.controller.Controller
+        do {
+            val c = psiClass.superClass
+            if(c != null && c.qualifiedName == "net.jkcode.jkmvc.http.controller.Controller")
+                return true
+        }
+        while (c != null)
+        return false
     }
 
     /**
      * 获取待处理的方法列表
      */
     override fun filterPsiMethods(psiClass: PsiClass): List<PsiMethod> {
-        return psiClass.allMethods.filter {m: PsiMethod ->
+        // 不要用 psiClass.allMethods，会包含父类Controller的方法(setReq/view/renderXXX之类的方法)
+        // 要用 psiClass.methods，只包含本类方法
+        return psiClass.methods.filter {m: PsiMethod ->
             val modifier = m.modifierList
             (!modifier.hasModifierProperty(PsiModifier.PRIVATE) // 非私有
-                && !modifier.hasModifierProperty(PsiModifier.STATIC)) // 非静态
+                && !modifier.hasModifierProperty(PsiModifier.STATIC) // 非静态
+                && !ignoreMethods.contains(m.name) // 不包含忽略的方法
+                && m.name != psiClass.name) // 不包含构造函数
         }
     }
 
@@ -56,13 +81,9 @@ public class SpringApiParser(project: Project, module: Module, settings: YapixCo
      * 解析类级别信息
      */
     override fun parseController(controller: PsiClass): ControllerApiInfo? {
-        var path: String? = null
-        val annotation = PsiAnnotationUtils.getAnnotationIncludeExtends(controller,
-            SpringConstants.RequestMapping)
-        if (annotation != null) {
-            val mapping = PathParser.parseRequestMappingAnnotation(annotation)
-            path = mapping.path
-        }
+        // TODO: controller.qualifiedName 是类全路径，需要去掉http.yaml中指定的包名
+        // 目前仅仅是简单处理，取controller名即
+        var path: String = controller.name!!.removeSuffix("Controller").lcFirst()
         val info = ControllerApiInfo()
         info.path = PathUtils.path(path)
         info.declareCategory = parseHelper.getDeclareApiCategory(controller)
@@ -80,16 +101,16 @@ public class SpringApiParser(project: Project, module: Module, settings: YapixCo
         if (PsiDocCommentUtils.findTagByName(method, DocumentTags.Ignore) != null)
             return null
 
-        // 1.解析路径信息: @XxxMapping
-        val mapping = PathParser.parse(method)
-        if (mapping == null || mapping.paths == null)
-            return null
+        // 1.解析路径信息
+        val mapping = PathParseInfo()
+        mapping.method = HttpMethod.POST // 写死post方法
+        mapping.paths = listOf(method.name.lcFirst()) // 路径=方法名
 
         // 2.解析方法上信息: 请求、响应等.
         val methodApi = doParseMethod(method, mapping)
 
         // 3.合并信息
-        val apis = mapping.paths.stream().map { path: String? ->
+        val apis = mapping.paths.map { path: String? ->
             var api = methodApi
             if (mapping.paths.size > 1) {
                 api = gson.fromJson(gson.toJson(methodApi), Api::class.java)
@@ -98,7 +119,7 @@ public class SpringApiParser(project: Project, module: Module, settings: YapixCo
             api.path = PathUtils.path(controllerInfo.path, path)
             api.category = controllerInfo.category
             api
-        }.collect(Collectors.toList())
+        }
         val data = MethodParseData(method)
         data.declaredApiSummary = methodApi.summary
         data.apis = apis

@@ -19,7 +19,7 @@ import org.apache.commons.collections.CollectionUtils;
 /**
  * 路径请求相关工具解析类
  */
-public class PathParser {
+class PathParser {
 
     private static final Map<HttpMethod, String> simpleMappings = new LinkedHashMap<>();
 
@@ -64,13 +64,12 @@ public class PathParser {
         if (apiVersion == null && method.getContainingClass() != null) {
             apiVersion = PsiAnnotationUtils.getAnnotation(method.getContainingClass(), WxbConstants.ApiVersion);
         }
-        if (apiVersion == null) {
+        if (apiVersion == null)
             return;
-        }
+
         Long version = AnnotationUtil.getLongAttributeValue(apiVersion, PsiAnnotation.DEFAULT_REFERENCED_METHOD_NAME);
-        if (version == null) {
+        if (version == null)
             return;
-        }
 
         List<String> paths = Lists.newArrayListWithCapacity(pathInfo.getPaths().size());
         for (String p : pathInfo.getPaths()) {

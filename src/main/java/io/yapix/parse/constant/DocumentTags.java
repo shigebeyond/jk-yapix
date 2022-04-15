@@ -15,6 +15,9 @@ public interface DocumentTags {
 
     String Param = "param";
 
+    //jkmvc特有的路由参数
+    String RouteParam = "routeParam";
+
     String Mock = "mock";
 
     String Ignore = "ignore";

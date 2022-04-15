@@ -5,7 +5,7 @@ package io.yapix.model;
  */
 public enum RequestBodyType {
     form("application/x-www-form-urlencoded"),
-    form_data("multipart/form-data"),
+    form_data("multipart/form-data"),// 有上传
     json("application/json;charset=utf-8"),
     raw(""),
     ;

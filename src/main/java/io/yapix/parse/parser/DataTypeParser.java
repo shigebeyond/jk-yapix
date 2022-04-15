@@ -28,20 +28,29 @@ public final class DataTypeParser {
 
     /**
      * 获取字段类型
+     *    1 数组、集合 -> array
+     *    2 枚举 -> string
+     *    3 其他：根据配置文件 types.properties 中的类型映射，来获得目标类型
      */
     public String parseType(PsiType type) {
         // 数组类型处理
-        if (PsiTypeUtils.isArray(type) || PsiTypeUtils.isCollection(type, this.project, this.module)) {
+        if (PsiTypeUtils.isArray(type) || PsiTypeUtils.isCollection(type, this.project, this.module))
             return DataTypes.ARRAY;
-        }
+
         boolean isEnum = PsiTypeUtils.isEnum(type);
-        if (isEnum) {
+        if (isEnum)
             return DataTypes.STRING;
-        }
+
         String dataType = getTypeInProperties(type);
         return StringUtils.isEmpty(dataType) ? DataTypes.OBJECT : dataType;
     }
 
+    /**
+     * 根据配置文件 types.properties 中的类型映射，来获得目标类型
+     *   如 byte=integer / short=integer
+     * @param type
+     * @return
+     */
     public static String getTypeInProperties(PsiType type) {
         Properties typeProperties = PropertiesLoader.getProperties(FILE);
         return typeProperties.getProperty(type.getCanonicalText());

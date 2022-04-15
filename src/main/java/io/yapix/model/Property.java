@@ -8,6 +8,10 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * 参数
+ *   本对象是一级属性，type表示对象类型
+ *   二级属性：type不是基础类型，需要展开添加二级属性
+ *          1. 当type=array，则二级属性=items
+ *          2. 当type=object，则二级属性=properties
  */
 public class Property {
 

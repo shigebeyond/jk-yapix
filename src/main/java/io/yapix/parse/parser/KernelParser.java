@@ -50,64 +50,101 @@ public class KernelParser {
     }
 
     /**
-     * 解析指定类型
+     * 解析类型
+     * 1 一级解析: dataTypeParser.parseType(psiType)
+     *   数组、集合 -> array
+     *   枚举 -> string
+     *   其他：根据配置文件 types.properties 中的类型映射，来获得目标类型
+     * 2 二级解析
+     *    Map类型：解析泛型为Property.properties
+     *    数组：解析泛型为Property.items
+     *    集合：解析泛型为Property.items
+     *    对象:解析属性为Property.properties
+     * @param psiType
+     * @param canonicalType
+     * @return
      */
     public Property parseType(PsiType psiType, String canonicalType) {
         return doParseType(psiType, canonicalType, Sets.newHashSet());
     }
 
+    /**
+     * 解析类型
+     * 1 一级解析: dataTypeParser.parseType(psiType)
+     *   数组、集合 -> array
+     *   枚举 -> string
+     *   其他：根据配置文件 types.properties 中的类型映射，来获得目标类型
+     * 2 二级解析
+     *    Map类型：解析泛型为Property.properties
+     *    数组：解析泛型为Property.items
+     *    集合：解析泛型为Property.items
+     *    对象:解析属性为Property.properties
+     * @param psiType
+     * @param canonicalType
+     * @param chains
+     * @return
+     */
     private Property doParseType(PsiType psiType, String canonicalType, Set<PsiClass> chains) {
         Property item = new Property();
         item.setRequired(false);
-        item.setType(DataTypes.OBJECT);
-        if (StringUtils.isEmpty(canonicalType)) {
+        item.setType(DataTypes.OBJECT);//默认类型object
+        if (StringUtils.isEmpty(canonicalType))
             return item;
-        }
 
         // 泛型分割处理
         String[] types = splitTypeAndGenericPair(canonicalType);
-        String type = types[0];
-        String genericTypes = types[1];
-        if (PsiTypeUtils.isVoid(type)) {
+        String type = types[0];//类型
+        String genericTypes = types[1];//泛型
+        if (PsiTypeUtils.isVoid(type))
             return null;
-        }
 
+        // 获得类型的PsiClass
         PsiClass psiClass = PsiUtils.findPsiClass(this.project, this.module, type);
         if (psiClass != null) {
             psiType = PsiTypesUtil.getClassType(psiClass);
         }
-        if (psiType == null) {
+        if (psiType == null)
             return item;
-        }
 
+        /**
+         * 获取字段类型
+         *    1 数组、集合 -> array
+         *    2 枚举 -> string
+         *    3 其他：根据配置文件 types.properties 中的类型映射，来获得目标类型
+         */
         item.setType(dataTypeParser.parseType(psiType));
         item.setValues(parseHelper.getTypeValues(psiType));
         // 文件： 无需继续解析
-        if (DataTypes.FILE.equals(item.getType())) {
+        if (DataTypes.FILE.equals(item.getType()))
             return item;
-        }
-        // Map类型
+
+        // Map类型：解析泛型为Property.properties
         if (PsiTypeUtils.isMap(psiType, this.project, this.module) || JavaConstants.Object.equals(type)) {
             item.setType(DataTypes.OBJECT);
             doHandleMap(item, genericTypes, chains);
             return item;
         }
-        // 数组
+
+        // 数组：解析泛型为Property.items
         if (PsiTypeUtils.isArray(psiType)) {
             PsiArrayType arrayType = (PsiArrayType) psiType;
             PsiType componentType = arrayType.getComponentType();
             Property items = doParseType(componentType, componentType.getCanonicalText(), chains);
             item.setItems(items);
         }
-        // 集合
+
+        // 集合：解析泛型为Property.items
         if (PsiTypeUtils.isCollection(psiType, this.project, this.module)) {
+            // 递归调用
             Property items = doParseType(null, genericTypes, chains);
             item.setItems(items);
         }
-        // 对象
+
+        // 对象:解析属性为Property.properties
         boolean isNeedParseObject = psiClass != null && item.isObjectType()
                 && (chains == null || !chains.contains(psiClass));
         if (isNeedParseObject) {
+            // 递归调用
             Map<String, Property> properties = doParseBean(type, genericTypes, psiClass, chains);
             item.setProperties(properties);
         }
@@ -119,9 +156,8 @@ public class KernelParser {
      */
     private void doHandleMap(Property item, String genericTypes, Set<PsiClass> chains) {
         // 尝试解析map值得类型
-        if (StringUtils.isEmpty(genericTypes)) {
+        if (StringUtils.isEmpty(genericTypes))
             return;
-        }
 
         String[] kvGenericTypes = PsiGenericUtils.splitGenericParameters(genericTypes);
         if (kvGenericTypes.length >= 2) {

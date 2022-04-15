@@ -7,6 +7,7 @@ import com.intellij.psi.PsiMethod
 import io.yapix.config.YapixConfig
 import io.yapix.parse.model.ClassParseData
 import io.yapix.parse.model.MethodParseData
+import io.yapix.parse.parser.jkmvc.JkmvcApiParser
 import io.yapix.parse.parser.spring.SpringApiParser
 import org.jetbrains.kotlin.utils.addToStdlib.firstNotNullResult
 
@@ -19,7 +20,7 @@ class CompositeApiParser(project: Project, module: Module, settings: YapixConfig
     /**
      * 子解析器： spring + jkmvc
      */
-    private val subApiParsers: Array<IApiParser> = arrayOf(SpringApiParser(project, module, settings))
+    private val subApiParsers: Array<IApiParser> = arrayOf(SpringApiParser(project, module, settings), JkmvcApiParser(project, module, settings))
 
     /**
      * 解析方法

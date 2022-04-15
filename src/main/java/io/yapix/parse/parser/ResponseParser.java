@@ -44,9 +44,9 @@ public class ResponseParser {
      */
     public Property parse(PsiMethod method) {
         PsiType returnType = method.getReturnType();
-        if (returnType == null) {
+        if (returnType == null)
             return null;
-        }
+
         PsiType type = returnType;
         String typeText = returnType.getCanonicalText();
 

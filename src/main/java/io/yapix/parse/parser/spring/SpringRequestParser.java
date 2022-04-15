@@ -93,17 +93,17 @@ public class SpringRequestParser implements IRequestParser {
      * 解析请求方式
      */
     private RequestBodyType getRequestBodyType(List<PsiParameter> parameters, HttpMethod method) {
-        if (!method.isAllowBody()) {
+        if (!method.isAllowBody())
             return null;
-        }
+
         boolean requestBody = parameters.stream().anyMatch(p -> p.getAnnotation(RequestBody) != null);
-        if (requestBody) {
+        if (requestBody)
             return RequestBodyType.json;
-        }
+
         boolean multipartFile = parameters.stream().anyMatch(p -> PsiTypeUtils.isFileIncludeArray(p.getType()));
-        if (multipartFile) {
+        if (multipartFile)
             return RequestBodyType.form_data;
-        }
+
         return RequestBodyType.form;
     }
 
@@ -177,7 +177,7 @@ public class SpringRequestParser implements IRequestParser {
         for (PsiParameter parameter : parameters) {
             Property item = doParseParameter(parameter);
             item.setDescription(parseHelper.getParameterDescription(parameter, paramTagMap, item.getValues()));
-            // 当参数是bean时，需要获取包括参数
+            // 当参数是bean时，需要获取bean属性作为参数
             List<Property> parameterItems = resolveItemToParameters(item);
             items.addAll(parameterItems);
         }
@@ -209,12 +209,15 @@ public class SpringRequestParser implements IRequestParser {
 
         // 处理参数注解: @RequestParam等
         PsiAnnotation annotation = null;
-        ParameterIn in = ParameterIn.query;
+        ParameterIn in = ParameterIn.query;//参数所在位置(参数来源)
+
+        // 确定参数在哪里？query/header/path
         Map<String, ParameterIn> targets = new LinkedHashMap<>();
-        targets.put(RequestParam, ParameterIn.query);
+        targets.put(RequestParam, ParameterIn.query);//
         targets.put(RequestAttribute, ParameterIn.query);
         targets.put(RequestHeader, ParameterIn.header);
         targets.put(PathVariable, ParameterIn.path);
+
         for (Entry<String, ParameterIn> target : targets.entrySet()) {
             annotation = PsiAnnotationUtils.getAnnotation(parameter, target.getKey());
             if (annotation != null) {
@@ -227,12 +230,12 @@ public class SpringRequestParser implements IRequestParser {
         String name = null;
         String defaultValue = null;
         if (annotation != null) {
-            name = PsiAnnotationUtils.getStringAttributeValueByAnnotation(annotation, "name");
+            name = PsiAnnotationUtils.getStringAttributeValueByAnnotation(annotation, "name");//参数名
             if (StringUtils.isEmpty(name)) {
-                name = PsiAnnotationUtils.getStringAttributeValueByAnnotation(annotation, "value");
+                name = PsiAnnotationUtils.getStringAttributeValueByAnnotation(annotation, "value");//参数名
             }
-            required = AnnotationUtil.getBooleanAttributeValue(annotation, "required");
-            defaultValue = PsiAnnotationUtils.getStringAttributeValueByAnnotation(annotation, "defaultValue");
+            required = AnnotationUtil.getBooleanAttributeValue(annotation, "required");//必填
+            defaultValue = PsiAnnotationUtils.getStringAttributeValueByAnnotation(annotation, "defaultValue");//默认值
             if (SpringConstants.DEFAULT_NONE.equals(defaultValue)) {
                 defaultValue = null;
             }
@@ -255,9 +258,9 @@ public class SpringRequestParser implements IRequestParser {
      * 解析Item为扁平结构的parameter
      */
     private List<Property> resolveItemToParameters(Property item) {
-        if (item == null) {
+        if (item == null)
             return Collections.emptyList();
-        }
+
         boolean needFlat = item.isObjectType() && item.getProperties() != null && ParameterIn.query == item.getIn();
         if (needFlat) {
             Collection<Property> flatItems = item.getProperties().values();
