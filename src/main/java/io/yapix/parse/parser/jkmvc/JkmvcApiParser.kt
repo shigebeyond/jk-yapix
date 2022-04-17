@@ -53,8 +53,9 @@ public class JkmvcApiParser(project: Project, module: Module, settings: YapixCon
             return false
 
         // 2 逐层对比父类有 net.jkcode.jkmvc.http.controller.Controller
+        var c: PsiClass? = psiClass
         do {
-            val c = psiClass.superClass
+            c = c?.superClass
             if(c != null && c.qualifiedName == "net.jkcode.jkmvc.http.controller.Controller")
                 return true
         }
