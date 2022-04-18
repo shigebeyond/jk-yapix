@@ -1,6 +1,5 @@
 package io.yapix.parse.parser;
 
-import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.trim;
 
 import com.google.common.base.Splitter;
@@ -15,18 +14,17 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.javadoc.PsiDocComment;
-import com.intellij.psi.javadoc.PsiDocTag;
 import com.intellij.psi.javadoc.PsiDocToken;
 import io.yapix.model.Value;
 import io.yapix.parse.constant.DocumentTags;
 import io.yapix.parse.constant.JavaConstants;
 import io.yapix.parse.constant.SpringConstants;
 import io.yapix.parse.util.PsiAnnotationUtils;
-import io.yapix.parse.util.PsiDocCommentUtils;
 import io.yapix.parse.util.PsiLinkUtils;
 import io.yapix.parse.util.PsiSwaggerUtils;
 import io.yapix.parse.util.PsiTypeUtils;
 import io.yapix.parse.util.StringUtilsExt;
+import io.yapix.parse.util.doc.PsiDocCommentHelperProxy;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -54,12 +52,12 @@ public class ParseHelper {
      */
     public String getDeclareApiCategory(PsiClass psiClass) {
         // 优先级: 文档注释标记@menu > @Api > 文档注释第一行
-        String category = PsiDocCommentUtils.getDocCommentTagText(psiClass, DocumentTags.Category);
+        String category = PsiDocCommentHelperProxy.INSTANCE.getDocCommentTagText(psiClass, DocumentTags.Category);
         if (StringUtils.isEmpty(category)) {
             category = PsiSwaggerUtils.getApiCategory(psiClass);
         }
         if (StringUtils.isEmpty(category)) {
-            category = PsiDocCommentUtils.getDocCommentTitle(psiClass);
+            category = PsiDocCommentHelperProxy.INSTANCE.getDocCommentTitle(psiClass);
         }
         return category;
     }
@@ -80,7 +78,7 @@ public class ParseHelper {
             if (StringUtils.isEmpty(summary)) {
                 String[] tags = {DocumentTags.Description, DocumentTags.DescriptionYapiUpload};
                 for (String tag : tags) {
-                    summary = PsiDocCommentUtils.getDocCommentTagText(psiMethod, tag);
+                    summary = PsiDocCommentHelperProxy.INSTANCE.getDocCommentTagText(psiMethod, tag);
                     if (StringUtils.isNotEmpty(summary)) {
                         break;
                     }
@@ -116,21 +114,20 @@ public class ParseHelper {
      */
     public boolean getApiDeprecated(PsiMethod method) {
         PsiAnnotation annotation = PsiAnnotationUtils.getAnnotation(method, JavaConstants.Deprecate);
-        if (annotation != null) {
+        if (annotation != null)
             return true;
-        }
-        PsiDocTag deprecatedTag = PsiDocCommentUtils.findTagByName(method, DocumentTags.Deprecated);
-        return nonNull(deprecatedTag);
+
+        return PsiDocCommentHelperProxy.INSTANCE.hasTagByName(method, DocumentTags.Deprecated);
     }
 
     /**
      * 获取接口标签
      */
     public List<String> getApiTags(PsiMethod method) {
-        String tagsContent = PsiDocCommentUtils.getDocCommentTagText(method, DocumentTags.Tags);
-        if (tagsContent == null) {
+        String tagsContent = PsiDocCommentHelperProxy.INSTANCE.getDocCommentTagText(method, DocumentTags.Tags);
+        if (tagsContent == null)
             return Collections.emptyList();
-        }
+
         List<String> tags = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(tagsContent)
                 .stream().distinct().collect(Collectors.toList());
         return tags;
@@ -188,7 +185,7 @@ public class ParseHelper {
                 .filter(field -> field instanceof PsiEnumConstant)
                 .map(field -> {
                     String name = field.getName();
-                    String description = PsiDocCommentUtils.getDocCommentTitle(field);
+                    String description = PsiDocCommentHelperProxy.INSTANCE.getDocCommentTitle(field);
                     return new Value(name, description);
                 })
                 .collect(Collectors.toList());
@@ -201,9 +198,9 @@ public class ParseHelper {
      */
     public String getFieldName(PsiField field) {
         String property = PsiAnnotationUtils.getStringAttributeValue(field, SpringConstants.JsonProperty);
-        if (StringUtils.isNotBlank(property)) {
+        if (StringUtils.isNotBlank(property))
             return property;
-        }
+
         return field.getName();
     }
 
@@ -267,11 +264,10 @@ public class ParseHelper {
      */
     public boolean getFieldDeprecated(PsiField field) {
         PsiAnnotation annotation = PsiAnnotationUtils.getAnnotation(field, JavaConstants.Deprecate);
-        if (annotation != null) {
+        if (annotation != null)
             return true;
-        }
-        PsiDocTag deprecatedTag = PsiDocCommentUtils.findTagByName(field, DocumentTags.Deprecated);
-        return nonNull(deprecatedTag);
+
+        return PsiDocCommentHelperProxy.INSTANCE.hasTagByName(field, DocumentTags.Deprecated);
     }
 
 
@@ -280,29 +276,25 @@ public class ParseHelper {
      */
     public boolean isFieldIgnore(PsiField field) {
         // swagger -> @ignore -> @JsonIgnore
-        if (PsiSwaggerUtils.isFieldIgnore(field)) {
+        if (PsiSwaggerUtils.isFieldIgnore(field))
             return true;
-        }
 
-        PsiDocTag ignoreTag = PsiDocCommentUtils.findTagByName(field, DocumentTags.Ignore);
-        if (ignoreTag != null) {
+        boolean hasIgnoreTag = PsiDocCommentHelperProxy.INSTANCE.hasTagByName(field, DocumentTags.Ignore);
+        if (hasIgnoreTag)
             return true;
-        }
 
         String jsonIgnore = PsiAnnotationUtils.getStringAttributeValue(field, SpringConstants.JsonIgnore);
-        if ("true".equals(jsonIgnore)) {
-            return true;
-        }
-        return false;
+        return "true".equals(jsonIgnore);
     }
     //----------------------------- 类型 -----------------------------//
 
     public String getTypeDescription(PsiType type, List<Value> values) {
-        if (values != null && !values.isEmpty()) {
+        if (values != null && !values.isEmpty())
             return values.stream().map(Value::getText).collect(Collectors.joining(", "));
-        } else if (type != null) {
+
+        if (type != null)
             return type.getPresentableText();
-        }
+
         return null;
     }
 

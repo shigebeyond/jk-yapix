@@ -16,10 +16,9 @@ import io.yapix.parse.model.PathParseInfo
 import io.yapix.parse.parser.AbstractApiParser
 import io.yapix.parse.parser.IRequestParser
 import io.yapix.parse.util.PathUtils
-import io.yapix.parse.util.PsiDocCommentUtils
+import io.yapix.parse.util.doc.PsiDocCommentHelperProxy
 import org.apache.commons.lang3.StringUtils
 import net.jkcode.jkutil.common.lcFirst
-import org.jetbrains.kotlin.j2k.isImported
 
 /**
  * jkmvc Api接口解析器
@@ -99,7 +98,7 @@ public class JkmvcApiParser(project: Project, module: Module, settings: YapixCon
      * 解析某个方法的接口信息
      */
     override fun parseMethod(controllerInfo: ControllerApiInfo, method: PsiMethod): MethodParseData? {
-        if (PsiDocCommentUtils.findTagByName(method, DocumentTags.Ignore) != null)
+        if (PsiDocCommentHelperProxy.hasTagByName(method, DocumentTags.Ignore))
             return null
 
         // 1.解析路径信息

@@ -4,21 +4,15 @@ import com.google.common.collect.Lists
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiMethod
-import com.intellij.psi.PsiParameter
-import com.intellij.psi.javadoc.PsiDocTag
 import io.yapix.config.YapixConfig
 import io.yapix.model.*
-import io.yapix.parse.constant.DocumentTags
 import io.yapix.parse.model.RequestParseInfo
 import io.yapix.parse.parser.DateParser
 import io.yapix.parse.parser.IRequestParser
 import io.yapix.parse.parser.KernelParser
 import io.yapix.parse.parser.ParseHelper
-import io.yapix.parse.util.PsiDocCommentUtils
-import io.yapix.parse.util.PsiTypeUtils
+import io.yapix.parse.util.doc.PsiDocCommentHelperProxy
 import org.apache.commons.lang3.StringUtils
-import java.util.function.Predicate
-import java.util.stream.Collectors
 
 /**
  * jkmvc请求信息解析
@@ -85,9 +79,9 @@ class JkmvcRequestParser(project: Project, module: Module, private val settings:
      */
     fun getRequestParameters(method: PsiMethod): MutableList<Property> {
         // 获取方法@param标记信息
-        val params = PsiDocCommentUtils.findTagsByNames(method, DocumentTags.Param, DocumentTags.RouteParam)
-        val items: MutableList<Property> = Lists.newArrayListWithExpectedSize(params.size)
-        for (param in params){
+        val paramTagMap = PsiDocCommentHelperProxy.getTagParamTextMap(method)
+        val items: MutableList<Property> = Lists.newArrayListWithExpectedSize(paramTagMap.size)
+        for (param in paramTagMap){
             val item = doParseParameter(param)
             // 当参数是bean时，需要获取bean属性作为参数
             val parameterItems = resolveItemToParameters(item)
@@ -116,23 +110,34 @@ class JkmvcRequestParser(project: Project, module: Module, private val settings:
 
     /**
      * 解析单个参数
-     * @param paramTag 参数注释，如 @param *参数名:类型:默认值，其中*表示必填
+     * @param paramTag 参数注释，如 @param 参数名*:类型:默认值，其中*表示必填
      */
-    private fun doParseParameter(paramTag: PsiDocTag): Property? {
-        val elements = paramTag.dataElements
-        if (elements.isEmpty())
-            return null
-
+    private fun doParseParameter(paramTag: Map.Entry<String, String>): Property? {
+        /**
+         * paramTag.key = 参数名
+         * paramTag.value = *:类型:默认值 描述
+         */
         // 解析参数注释
-        val part = elements[0].text.trim().split(':') // *参数名:类型:默认值
-        var name = part[0] // 参数
-        val required = name.startsWith('*') // 必填
-        if (required)
-            name = name.substring(1)
-        val type = part.getOrNull(1) ?: DataTypes.STRING // 类型
-        val defaultValue = part.getOrNull(2) // 默认值
+        val name = paramTag.key.trim() // 参数
+        val other = paramTag.value.trim() // *:类型:默认值 描述
 
-        val description = elements[1].text.trim() // 参数描述
+        var description = other // 参数描述
+        var required = false
+        var type = DataTypes.STRING
+        var defaultValue: String? = null
+
+        // *:类型:默认值 描述
+        if(other.startsWith("*:") || other.startsWith(":")) {
+            // 空格前 -- *:类型:默认值
+            val typeDefault = other.substringBefore(' ')
+            val part = typeDefault.split(':') // *参数名:类型:默认值
+            required = part[0] == "*" // 必填
+            type = part.getOrNull(1) ?: DataTypes.STRING // 类型
+            defaultValue = part.getOrNull(2) // 默认值
+
+            // 空格后 -- 描述
+            description = other.substringAfter(' ') // 参数描述
+        }
 
         // 拼接参数信息
         //val item = Property()

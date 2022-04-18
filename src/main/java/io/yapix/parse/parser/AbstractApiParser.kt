@@ -13,8 +13,7 @@ import io.yapix.parse.model.ClassParseData
 import io.yapix.parse.model.ControllerApiInfo
 import io.yapix.parse.model.MethodParseData
 import io.yapix.parse.model.PathParseInfo
-import io.yapix.parse.parser.spring.SpringRequestParser
-import io.yapix.parse.util.PsiDocCommentUtils
+import io.yapix.parse.util.doc.PsiDocCommentHelperProxy
 
 /**
  * Api接口解析器基类
@@ -49,7 +48,7 @@ abstract class AbstractApiParser(project: Project, module: Module, settings: Yap
      */
     override fun parse(psiClass: PsiClass): ClassParseData? {
         if (!isNeedParseController(psiClass)
-            || PsiDocCommentUtils.findTagByName(psiClass, DocumentTags.Ignore) != null)  // 忽略
+            || PsiDocCommentHelperProxy.hasTagByName(psiClass, DocumentTags.Ignore))  // 忽略
             return null
 
         // 获得待处理方法

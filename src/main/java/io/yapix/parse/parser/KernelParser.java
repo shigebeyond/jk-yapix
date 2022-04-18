@@ -21,6 +21,7 @@ import io.yapix.parse.util.*;
 
 import java.util.*;
 
+import io.yapix.parse.util.doc.PsiDocCommentHelperProxy;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -182,7 +183,7 @@ public class KernelParser {
         Map<String, Property> properties = new LinkedHashMap<>();
 
         // 针对接口/实体类, 检查是否存在@see引用
-        for (String typeName : PsiDocCommentUtils.getTagTextSet(psiClass, DocumentTags.See)) {
+        for (String typeName : PsiDocCommentHelperProxy.INSTANCE.getTagTextSet(psiClass, DocumentTags.See)) {
             // 优先根据全限定名获取引用类, 其次根据非限定名(短名)获取.
             // [note] 建议用户尽量使用全限定名, 短名容易出现重名冲突.
             // 其实可以通过获取当前类的import作filter.

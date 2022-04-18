@@ -27,7 +27,7 @@ import io.yapix.parse.parser.IRequestParser;
 import io.yapix.parse.parser.KernelParser;
 import io.yapix.parse.parser.ParseHelper;
 import io.yapix.parse.util.PsiAnnotationUtils;
-import io.yapix.parse.util.PsiDocCommentUtils;
+import io.yapix.parse.util.doc.PsiDocCommentHelperProxy;
 import io.yapix.parse.util.PsiTypeUtils;
 import java.util.Arrays;
 import java.util.Collection;
@@ -115,7 +115,7 @@ public class SpringRequestParser implements IRequestParser {
         if (!httpMethod.isAllowBody()) {
             return Lists.newArrayList();
         }
-        Map<String, String> paramTagMap = PsiDocCommentUtils.getTagParamTextMap(method);
+        Map<String, String> paramTagMap = PsiDocCommentHelperProxy.INSTANCE.getTagParamTextMap(method);
 
         // Json请求: 找到@RequestBody注解参数
         PsiParameter bp = parameters.stream()
@@ -171,7 +171,7 @@ public class SpringRequestParser implements IRequestParser {
                 .collect(Collectors.toList());
 
         // 获取方法@param标记信息
-        Map<String, String> paramTagMap = PsiDocCommentUtils.getTagParamTextMap(method);
+        Map<String, String> paramTagMap = PsiDocCommentHelperProxy.INSTANCE.getTagParamTextMap(method);
 
         List<Property> items = Lists.newArrayListWithExpectedSize(parameters.size());
         for (PsiParameter parameter : parameters) {

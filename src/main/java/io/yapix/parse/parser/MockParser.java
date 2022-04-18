@@ -13,7 +13,7 @@ import io.yapix.model.DataTypes;
 import io.yapix.model.Property;
 import io.yapix.parse.constant.DocumentTags;
 import io.yapix.parse.util.PropertiesLoader;
-import io.yapix.parse.util.PsiDocCommentUtils;
+import io.yapix.parse.util.doc.PsiDocCommentHelperProxy;
 import io.yapix.parse.util.PsiTypeUtils;
 import java.util.List;
 import java.util.Properties;
@@ -41,7 +41,7 @@ public class MockParser {
     public String parseMock(Property property, PsiType type, PsiField field, String filedName) {
         // 自定义标记
         if (field != null) {
-            String mock = PsiDocCommentUtils.getTagText(field, DocumentTags.Mock);
+            String mock = PsiDocCommentHelperProxy.INSTANCE.getTagText(field, DocumentTags.Mock);
             if (StringUtils.isNotEmpty(mock)) {
                 return mock;
             }

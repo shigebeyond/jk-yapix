@@ -16,7 +16,7 @@ import io.yapix.parse.parser.AbstractApiParser
 import io.yapix.parse.parser.IRequestParser
 import io.yapix.parse.util.PathUtils
 import io.yapix.parse.util.PsiAnnotationUtils
-import io.yapix.parse.util.PsiDocCommentUtils
+import io.yapix.parse.util.doc.PsiDocCommentHelperProxy
 import org.apache.commons.lang3.StringUtils
 import java.util.stream.Collectors
 
@@ -77,7 +77,7 @@ public class SpringApiParser(project: Project, module: Module, settings: YapixCo
      * 解析某个方法的接口信息
      */
     override fun parseMethod(controllerInfo: ControllerApiInfo, method: PsiMethod): MethodParseData? {
-        if (PsiDocCommentUtils.findTagByName(method, DocumentTags.Ignore) != null)
+        if (PsiDocCommentHelperProxy.hasTagByName(method, DocumentTags.Ignore))
             return null
 
         // 1.解析路径信息: @XxxMapping

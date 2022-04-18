@@ -1,29 +1,24 @@
-package io.yapix.parse.util
+package io.yapix.parse.util.doc
 
+import com.intellij.psi.PsiDocCommentOwner
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiJavaDocumentedElement
 import com.intellij.psi.javadoc.PsiDocTag
 import com.intellij.psi.javadoc.PsiDocToken
 import com.intellij.psi.javadoc.PsiInlineDocTag
 import io.yapix.parse.constant.DocumentTags
 import net.jkcode.jkutil.common.substringBetween
 import java.util.*
-import java.util.function.Function
-import java.util.function.Predicate
-import java.util.stream.Collectors
-import kotlin.collections.ArrayList
 
 /**
  * PsiDocComment相关工具类
  */
-object PsiDocCommentUtils {
+object JavaPsiDocCommentHelper: IPsiDocCommentHelper {
 
     /**
      * 获取标记自定义字段名(包括字段描述)
      * @param element 文档元素
      */
-    @JvmStatic
-    fun getTagParamTextMap(element: PsiJavaDocumentedElement): Map<String, String> {
+    override fun getTagParamTextMap(element: PsiDocCommentOwner): Map<String, String> {
         val map: MutableMap<String, String> = HashMap()
         val tags = findTagsByName(element, DocumentTags.Param)
         for (tag in tags) {
@@ -50,8 +45,7 @@ object PsiDocCommentUtils {
      * BaseInterface {field1, field2, field3, ...}
      * 至于如何区分field1,field2,field3隶属于哪个实现类, 是用户写desc需要考量的, 而非插件程序逻辑.
      */
-    @JvmStatic
-    fun getTagTextSet(element: PsiJavaDocumentedElement, tag: String): Set<String> {
+    override fun getTagTextSet(element: PsiDocCommentOwner, tag: String): Set<String> {
         return findTagsByName(element, tag)
             .mapNotNull{ obj: PsiDocTag ->
                 obj.dataElements.firstOrNull()?.text?.trim()
@@ -62,8 +56,7 @@ object PsiDocCommentUtils {
     /**
      * 获取标记文本值
      */
-    @JvmStatic
-    fun getTagText(element: PsiJavaDocumentedElement, tagName: String?): String? {
+    override fun getTagText(element: PsiDocCommentOwner, tagName: String): String? {
         val tag = findTagByName(element, tagName)
         if (tag == null)
             return null
@@ -75,8 +68,7 @@ object PsiDocCommentUtils {
     /**
      * 获取文档标记内容
      */
-    @JvmStatic
-    fun getDocCommentTagText(element: PsiJavaDocumentedElement, tagName: String): String? {
+    override fun getDocCommentTagText(element: PsiDocCommentOwner, tagName: String): String? {
         val comment = element.docComment
         val tag = comment?.findTagByName(tagName)
         if (tag != null && tag.valueElement != null) {
@@ -91,8 +83,7 @@ object PsiDocCommentUtils {
     /**
      * 获取文档标题行
      */
-    @JvmStatic
-    fun getDocCommentTitle(element: PsiJavaDocumentedElement): String? {
+    override fun getDocCommentTitle(element: PsiDocCommentOwner): String? {
         val comment = element.docComment ?: return null
         val title =  comment.descriptionElements.firstOrNull { o: PsiElement ->
             o is PsiDocToken
@@ -101,10 +92,16 @@ object PsiDocCommentUtils {
     }
 
     /**
+     * 检查是否存在文档注释上的标记
+     */
+    override fun hasTagByName(element: PsiDocCommentOwner, tagName: String): Boolean{
+        return findTagByName(element, tagName) != null
+    }
+
+    /**
      * 获取文档注释上的标记
      */
-    @JvmStatic
-    fun findTagByName(element: PsiJavaDocumentedElement, tagName: String?): PsiDocTag? {
+    fun findTagByName(element: PsiDocCommentOwner, tagName: String): PsiDocTag? {
         val comment = element.docComment
         return comment?.findTagByName(tagName)
     }
@@ -112,32 +109,17 @@ object PsiDocCommentUtils {
     /**
      * 获取文档注释上的标记
      */
-    fun findTagsByName(element: PsiJavaDocumentedElement, tagName: String): Array<PsiDocTag> {
+    fun findTagsByName(element: PsiDocCommentOwner, tagName: String): Array<PsiDocTag> {
         val comment = element.docComment
         return comment?.findTagsByName(tagName)
             ?: emptyArray()
     }
 
     /**
-     * 获取文档注释上的标记
-     */
-    fun findTagsByNames(element: PsiJavaDocumentedElement, vararg tagNames: String): List<PsiDocTag> {
-        val comment = element.docComment
-        if(comment == null)
-            return emptyList()
-
-        val r = ArrayList<PsiDocTag>()
-        for(tagName in tagNames) {
-            r.addAll(comment.findTagsByName(tagName))
-        }
-        return r
-    }
-
-    /**
      * 获取注释中link标记的内容
      *   对类的引用：java {@link io.yapix.model.Property}
      */
-    fun getInlineLinkContent(element: PsiJavaDocumentedElement): String? {
+    override fun getInlineLinkContent(element: PsiDocCommentOwner): String? {
         val comment = element.docComment ?: return null
         for(ele in comment.descriptionElements){
             if(ele is PsiInlineDocTag && ele.text.startsWith("{@link"))
@@ -146,17 +128,4 @@ object PsiDocCommentUtils {
         return null
     }
 
-    /**
-     * 获取注释中link标记的内容
-     *   对类的引用： kotlin [io.yapix.model.Property]
-     *   TODO: kotlin PsiJavaDocumentedElement
-     */
-    /*fun getInlineLinkContent(element: PsiJavaDocumentedElement): String? {
-        val comment = element.docComment ?: return null
-        for(ele in comment.descriptionElements){
-            if(ele is PsiInlineDocTag && ele.text.startsWith("["))
-                return ele.text.substringBetween("[", "]")
-        }
-        return null
-    }*/
 }

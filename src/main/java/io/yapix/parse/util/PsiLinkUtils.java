@@ -8,6 +8,7 @@ import com.intellij.psi.PsiField;
 import com.intellij.psi.impl.source.PsiClassImpl;
 import com.intellij.psi.PsiClassOwner;
 import com.intellij.psi.search.GlobalSearchScope;
+import io.yapix.parse.util.doc.PsiDocCommentHelperProxy;
 import java.util.Objects;
 
 public class PsiLinkUtils {
@@ -73,7 +74,7 @@ public class PsiLinkUtils {
                             String value = splitValue[1].split(";")[0];
                             remark += ":" + value;
                         }
-                        String filedValue = PsiDocCommentUtils.getDocCommentTitle(psiField);
+                        String filedValue = PsiDocCommentHelperProxy.INSTANCE.getDocCommentTitle(psiField);
                         if (!Strings.isNullOrEmpty(filedValue)) {
                             remark += "(" + filedValue + ")";
                         }
