@@ -78,12 +78,10 @@ object PsiDocCommentUtils {
     @JvmStatic
     fun getDocCommentTagText(element: PsiJavaDocumentedElement, tagName: String): String? {
         val comment = element.docComment
-        if (comment != null) {
-            val tag = comment.findTagByName(tagName)
-            if (tag != null && tag.valueElement != null) {
-                return tag.dataElements.joinToString { e ->
-                    e.text.trim()
-                }
+        val tag = comment?.findTagByName(tagName)
+        if (tag != null && tag.valueElement != null) {
+            return tag.dataElements.joinToString { e ->
+                e.text.trim()
             }
         }
 
@@ -95,10 +93,7 @@ object PsiDocCommentUtils {
      */
     @JvmStatic
     fun getDocCommentTitle(element: PsiJavaDocumentedElement): String? {
-        val comment = element.docComment
-        if (comment == null)
-            return null
-
+        val comment = element.docComment ?: return null
         val title =  comment.descriptionElements.firstOrNull { o: PsiElement ->
             o is PsiDocToken
         }
