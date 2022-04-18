@@ -92,7 +92,7 @@ object KtPsiDocCommentHelper: IPsiDocCommentHelper {
      * 检查是否存在文档注释上的标记
      */
     override fun hasTagByName(element: PsiDocCommentOwner, tagName: String): Boolean{
-        return JavaPsiDocCommentHelper.findTagByName(element, tagName) != null
+        return findTagByName(element, tagName) != null
     }
 
     /**
