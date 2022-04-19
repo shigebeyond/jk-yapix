@@ -79,7 +79,7 @@ object KtPsiDocCommentHelper: IPsiDocCommentHelper {
     }
 
     /**
-     * 获取文档标题行
+     * 获取文档标题行: 文档第一行
      */
     override fun getDocCommentTitle(element: PsiDocCommentOwner): String? {
         val comment = element.findKDoc() ?: return null
@@ -87,6 +87,13 @@ object KtPsiDocCommentHelper: IPsiDocCommentHelper {
             o is LeafPsiElement && o.elementType.toString() == "KDOC_TEXT"
         }
         return title?.text?.trim()
+    }
+
+    /**
+     * 获取文档内容
+     */
+    override fun getDocCommentText(element: PsiDocCommentOwner): String?{
+        return element.findKDoc()?.getContent()
     }
 
     /**

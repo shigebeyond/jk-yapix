@@ -65,10 +65,17 @@ object PsiDocCommentHelperProxy: IPsiDocCommentHelper {
     }
 
     /**
-     * 获取文档标题行
+     * 获取文档标题行: 文档第一行
      */
     override fun getDocCommentTitle(element: PsiDocCommentOwner): String? {
         return getTargetHelper(element).getDocCommentTitle(element)
+    }
+
+    /**
+     * 获取文档内容
+     */
+    override fun getDocCommentText(element: PsiDocCommentOwner): String?{
+        return getTargetHelper(element).getDocCommentText(element)
     }
 
     /**

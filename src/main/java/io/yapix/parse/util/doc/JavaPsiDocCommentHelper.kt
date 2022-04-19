@@ -1,10 +1,11 @@
 package io.yapix.parse.util.doc
 
-import com.intellij.psi.PsiDocCommentOwner
-import com.intellij.psi.PsiElement
+import com.google.common.base.Strings
+import com.intellij.psi.*
+import com.intellij.psi.impl.source.PsiClassImpl
 import com.intellij.psi.javadoc.PsiDocTag
 import com.intellij.psi.javadoc.PsiDocToken
-import com.intellij.psi.javadoc.PsiInlineDocTag
+import com.intellij.psi.search.GlobalSearchScope
 import io.yapix.parse.constant.DocumentTags
 import net.jkcode.jkutil.common.substringBetween
 import java.util.*
@@ -12,7 +13,7 @@ import java.util.*
 /**
  * PsiDocComment相关工具类
  */
-object JavaPsiDocCommentHelper: IPsiDocCommentHelper {
+object JavaPsiDocCommentHelper : IPsiDocCommentHelper {
 
     /**
      * 获取标记自定义字段名(包括字段描述)
@@ -47,7 +48,7 @@ object JavaPsiDocCommentHelper: IPsiDocCommentHelper {
      */
     override fun getTagTextSet(element: PsiDocCommentOwner, tag: String): Set<String> {
         return findTagsByName(element, tag)
-            .mapNotNull{ obj: PsiDocTag ->
+            .mapNotNull { obj: PsiDocTag ->
                 obj.dataElements.firstOrNull()?.text?.trim()
             }
             .toSet()
@@ -81,20 +82,27 @@ object JavaPsiDocCommentHelper: IPsiDocCommentHelper {
     }
 
     /**
-     * 获取文档标题行
+     * 获取文档标题行: 文档第一行
      */
     override fun getDocCommentTitle(element: PsiDocCommentOwner): String? {
         val comment = element.docComment ?: return null
-        val title =  comment.descriptionElements.firstOrNull { o: PsiElement ->
+        val title = comment.descriptionElements.firstOrNull { o: PsiElement ->
             o is PsiDocToken
         }
         return title?.text?.trim()
     }
 
     /**
+     * 获取文档内容
+     */
+    override fun getDocCommentText(element: PsiDocCommentOwner): String? {
+        return element.docComment?.text
+    }
+
+    /**
      * 检查是否存在文档注释上的标记
      */
-    override fun hasTagByName(element: PsiDocCommentOwner, tagName: String): Boolean{
+    override fun hasTagByName(element: PsiDocCommentOwner, tagName: String): Boolean {
         return findTagByName(element, tagName) != null
     }
 
@@ -120,10 +128,77 @@ object JavaPsiDocCommentHelper: IPsiDocCommentHelper {
      *   对类的引用: 如 java {@link io.yapix.model.Property}, kotlin [io.yapix.model.Property]
      */
     override fun getLinkText(element: PsiDocCommentOwner, comment: String): String? {
-        if(comment.contains("{@link"))
+        if (comment.contains("{@link"))
             return comment.substringBetween("{@link", "}")
 
         return null
+    }
+
+    /**
+     * @description: 获得link 备注
+     * @param: [remark, project, field]
+     * @return: java.lang.String
+     * @author: chengsheng@qbb6.com
+     * @date: 2019/5/18
+     */
+    fun getLinkRemark(field: PsiField): String? {
+        var remark = ""
+
+        var linkAddress = getLinkText(field)
+        if (linkAddress == null)
+            return null
+
+        val project = field.project
+        var psiClassLink = JavaPsiFacade.getInstance(project)
+            .findClass(linkAddress, GlobalSearchScope.allScope(project))
+        if (psiClassLink == null) {
+            //可能没有获得全路径，尝试获得全路径
+            val imports = field.containingFile.importsInFile()
+            val parts = linkAddress.split('.', limit = 2)
+            val key = parts[0]
+            if(parts.size > 1)
+                linkAddress = parts[1] // 剩下部分
+            if(key in imports){
+                linkAddress = imports[key] + '.' + linkAddress
+                // 继续查找类
+                psiClassLink = JavaPsiFacade.getInstance(project).findClass(linkAddress, GlobalSearchScope.allScope(project))
+            }
+
+            if (psiClassLink == null) {
+                //如果是同包情况
+                linkAddress = (((field.parent as PsiClassImpl).context as PsiClassOwner).packageName + "." + linkAddress)
+                psiClassLink = JavaPsiFacade.getInstance(project).findClass(linkAddress, GlobalSearchScope.allScope(project))
+            }
+            //如果小于等于一为不存在import，不做处理
+        }
+
+        if (Objects.nonNull(psiClassLink)) {
+            //说明获得了link 的class
+            val linkFields = psiClassLink!!.fields
+            if (linkFields.size > 0) {
+                remark += "," + psiClassLink.name + "["
+                for (i in linkFields.indices) {
+                    val psiField = linkFields[i]
+                    if (i > 0) {
+                        remark += ","
+                    }
+                    // 先获得名称
+                    remark += psiField.name
+                    // 后获得value,通过= 来截取获得，第二个值，再截取;
+                    val splitValue = psiField.text.split("=".toRegex()).toTypedArray()
+                    if (splitValue.size > 1) {
+                        val value = splitValue[1].split(";".toRegex()).toTypedArray()[0]
+                        remark += ":$value"
+                    }
+                    val filedValue = PsiDocCommentHelperProxy.getDocCommentTitle(psiField)
+                    if (!Strings.isNullOrEmpty(filedValue)) {
+                        remark += "($filedValue)"
+                    }
+                }
+                remark += "]"
+            }
+        }
+        return remark
     }
 
 }

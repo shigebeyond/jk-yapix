@@ -39,9 +39,14 @@ interface IPsiDocCommentHelper {
     fun getDocCommentTagText(element: PsiDocCommentOwner, tagName: String): String?
 
     /**
-     * 获取文档标题行
+     * 获取文档标题行: 文档第一行
      */
     fun getDocCommentTitle(element: PsiDocCommentOwner): String?
+
+    /**
+     * 获取文档内容
+     */
+    fun getDocCommentText(element: PsiDocCommentOwner): String?
 
     /**
      * 检查是否存在文档注释上的标记
@@ -52,5 +57,5 @@ interface IPsiDocCommentHelper {
      * 获取注释中link标记的内容
      *   对类的引用: 如 java {@link io.yapix.model.Property}, kotlin [io.yapix.model.Property]
      */
-    fun getLinkText(element: PsiDocCommentOwner, comment: String): String?
+    fun getLinkText(element: PsiDocCommentOwner, comment: String = getDocCommentText(element)!!): String?
 }

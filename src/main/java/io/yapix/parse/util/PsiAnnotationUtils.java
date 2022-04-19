@@ -25,6 +25,13 @@ public class PsiAnnotationUtils {
     }
 
     /**
+     * 有指定注解
+     */
+    public static boolean hasAnnotation(PsiModifierListOwner element, String fqn) {
+        return getAnnotation(element, fqn) != null;
+    }
+
+    /**
      * 获取指定注解
      */
     public static PsiAnnotation getAnnotation(PsiModifierListOwner element, String fqn) {
