@@ -14,20 +14,26 @@ import io.yapix.parse.model.ControllerApiInfo
 import io.yapix.parse.model.MethodParseData
 import io.yapix.parse.model.PathParseInfo
 import io.yapix.parse.util.doc.PsiDocCommentHelperProxy
+import org.slf4j.LoggerFactory
 
 /**
  * Api接口解析器基类
  */
-abstract class AbstractApiParser(project: Project, module: Module, settings: YapixConfig) : IApiParser {
+abstract class AbstractApiParser(protected val project: Project, module: Module, settings: YapixConfig) : IApiParser {
 
     // 请求解析器
     protected abstract val requestParser: IRequestParser
 
     // 响应解析器
-    protected val responseParser: ResponseParser = ResponseParser(project, module, settings)
+    protected abstract val responseParser: ResponseParser
 
     // 解析助手
     protected val parseHelper: ParseHelper = ParseHelper(project, module)
+
+    companion object{
+
+        val logger = LoggerFactory.getLogger(AbstractApiParser::class.java)
+    }
 
     /**
      * 解析方法
@@ -94,6 +100,7 @@ abstract class AbstractApiParser(project: Project, module: Module, settings: Yap
         // 响应信息
         val response = responseParser.parse(method)
         api.responses = response
+        logger.debug("解析方法[{}.{}()]成为api: {}", method.containingClass?.name, method.name, api)
         return api
     }
 

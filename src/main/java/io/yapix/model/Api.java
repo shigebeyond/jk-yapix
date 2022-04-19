@@ -165,4 +165,22 @@ public class Api {
     public void setTags(List<String> tags) {
         this.tags = tags;
     }
+
+    @Override
+    public String toString() {
+        return "Api{" +
+                "path='" + path + '\'' +
+                ", method=" + method +
+                ", summary='" + summary + '\'' +
+                ", tags=" + tags +
+                ", description='" + description + '\'' +
+                ", deprecated=" + deprecated +
+                ", parameters=" + parameters +
+                ", requestBodyType=" + requestBodyType +
+                ", requestBody=" + requestBody +
+                ", requestBodyForm=" + requestBodyForm +
+                ", responses=" + responses +
+                ", category='" + category + '\'' +
+                '}';
+    }
 }
