@@ -45,6 +45,14 @@ public class ParseHelper {
         this.module = module;
     }
 
+    //----------------------- 方法相关 ------------------------------------//
+    /**
+     * 获取方法描述
+     */
+    public String getMethodDescription(PsiMethod psiMethod) {
+        return PsiDocCommentHelperProxy.INSTANCE.getDocCommentTitle(psiMethod);
+    }
+
     //----------------------- 接口Api相关 ------------------------------------//
 
     /**

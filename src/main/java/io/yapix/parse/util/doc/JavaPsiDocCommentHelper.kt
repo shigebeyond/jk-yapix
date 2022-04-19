@@ -117,14 +117,12 @@ object JavaPsiDocCommentHelper: IPsiDocCommentHelper {
 
     /**
      * 获取注释中link标记的内容
-     *   对类的引用：java {@link io.yapix.model.Property}
+     *   对类的引用: 如 java {@link io.yapix.model.Property}, kotlin [io.yapix.model.Property]
      */
-    override fun getInlineLinkContent(element: PsiDocCommentOwner): String? {
-        val comment = element.docComment ?: return null
-        for(ele in comment.descriptionElements){
-            if(ele is PsiInlineDocTag && ele.text.startsWith("{@link"))
-                return ele.text.substringBetween("{@link", "}")
-        }
+    override fun getLinkText(element: PsiDocCommentOwner, comment: String): String? {
+        if(comment.contains("{@link"))
+            return comment.substringBetween("{@link", "}")
+
         return null
     }
 

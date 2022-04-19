@@ -82,7 +82,7 @@ class JkmvcRequestParser(project: Project, module: Module, private val settings:
         val paramTagMap = PsiDocCommentHelperProxy.getTagParamTextMap(method)
         val items: MutableList<Property> = Lists.newArrayListWithExpectedSize(paramTagMap.size)
         for (param in paramTagMap){
-            val item = doParseParameter(param)
+            val item = doParseParameter(method, param)
             // 当参数是bean时，需要获取bean属性作为参数
             val parameterItems = resolveItemToParameters(item)
             items.addAll(parameterItems)
@@ -110,9 +110,10 @@ class JkmvcRequestParser(project: Project, module: Module, private val settings:
 
     /**
      * 解析单个参数
+     * @param method
      * @param paramTag 参数注释，如 @param 参数名*:类型:默认值，其中*表示必填
      */
-    private fun doParseParameter(paramTag: Map.Entry<String, String>): Property? {
+    private fun doParseParameter(method: PsiMethod, paramTag: Map.Entry<String, String>): Property? {
         /**
          * paramTag.key = 参数名
          * paramTag.value = *:类型:默认值 描述
@@ -153,7 +154,7 @@ class JkmvcRequestParser(project: Project, module: Module, private val settings:
          *    集合：解析泛型为Property.items
          *    对象:解析属性为Property.properties
          */
-        val item = kernelParser.parseType(null, type)
+        val item = kernelParser.parseType(null, type)!!
         item.required = required
         item.name = name
         item.type = type

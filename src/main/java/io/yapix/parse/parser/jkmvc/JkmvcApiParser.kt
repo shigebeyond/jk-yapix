@@ -3,9 +3,11 @@ package io.yapix.parse.parser.jkmvc
 import com.google.gson.Gson
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
+import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiModifier
+import com.intellij.psi.search.GlobalSearchScope
 import io.yapix.config.YapixConfig
 import io.yapix.model.Api
 import io.yapix.model.HttpMethod
@@ -15,6 +17,7 @@ import io.yapix.parse.model.MethodParseData
 import io.yapix.parse.model.PathParseInfo
 import io.yapix.parse.parser.AbstractApiParser
 import io.yapix.parse.parser.IRequestParser
+import io.yapix.parse.parser.ResponseParser
 import io.yapix.parse.util.PathUtils
 import io.yapix.parse.util.doc.PsiDocCommentHelperProxy
 import org.apache.commons.lang3.StringUtils
@@ -43,6 +46,14 @@ public class JkmvcApiParser(project: Project, module: Module, settings: YapixCon
     // 请求解析器
     protected override val requestParser: IRequestParser = JkmvcRequestParser(project, module, settings)
 
+    // 响应解析器
+    protected override val responseParser: ResponseParser = JkmvcResponseParser(project, module, settings)
+
+    /**
+     * controller基类
+     */
+    protected val controllerBaseClass = JavaPsiFacade.getInstance(project).findClass("net.jkcode.jkmvc.http.controller.Controller", GlobalSearchScope.allScope(project))!!
+
     /**
      * 判断是否是控制类或接口
      */
@@ -51,15 +62,8 @@ public class JkmvcApiParser(project: Project, module: Module, settings: YapixCon
         if(!psiClass.qualifiedName!!.endsWith("Controller"))
             return false
 
-        // 2 逐层对比父类有 net.jkcode.jkmvc.http.controller.Controller
-        var c: PsiClass? = psiClass
-        do {
-            c = c?.superClass
-            if(c != null && c.qualifiedName == "net.jkcode.jkmvc.http.controller.Controller")
-                return true
-        }
-        while (c != null)
-        return false
+        // 2 继承controller基类
+        return psiClass.isInheritor(controllerBaseClass, true)
     }
 
     /**

@@ -25,4 +25,6 @@ public interface DocumentTags {
     String See = "see";
 
     String Tags = "tags";
+
+    String Return = "return";
 }

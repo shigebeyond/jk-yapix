@@ -2,6 +2,7 @@ package io.yapix.parse.util.doc
 
 import com.intellij.psi.PsiDocCommentOwner
 import com.intellij.psi.PsiElement
+import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.intellij.psi.javadoc.PsiDocToken
 import com.intellij.psi.javadoc.PsiInlineDocTag
 import io.yapix.parse.constant.DocumentTags
@@ -60,7 +61,7 @@ object KtPsiDocCommentHelper: IPsiDocCommentHelper {
         if (tag == null)
             return null
 
-        val splits = tag.text.split("\\s".toRegex(), 2)
+        val splits = tag.getContent().split("\\s".toRegex(), 2)
         return splits.firstOrNull()
     }
 
@@ -83,7 +84,7 @@ object KtPsiDocCommentHelper: IPsiDocCommentHelper {
     override fun getDocCommentTitle(element: PsiDocCommentOwner): String? {
         val comment = element.findKDoc() ?: return null
         val title =  comment.allChildren.firstOrNull { o: PsiElement ->
-            o is PsiDocToken // TODO: 类型未知
+            o is LeafPsiElement && o.elementType.toString() == "KDOC_TEXT"
         }
         return title?.text?.trim()
     }
@@ -113,15 +114,13 @@ object KtPsiDocCommentHelper: IPsiDocCommentHelper {
 
     /**
      * 获取注释中link标记的内容
-     *   对类的引用：java {@link io.yapix.model.Property}
+     *   对类的引用: 如 java {@link io.yapix.model.Property}, kotlin [io.yapix.model.Property]
+     * @return
      */
-    override fun getInlineLinkContent(element: PsiDocCommentOwner): String? {
-        val comment = element.findKDoc() ?: return null
-        // TODO
-        for(ele in comment.allChildren){
-            if(ele is PsiInlineDocTag && ele.text.startsWith("{@link"))
-                return ele.text.substringBetween("{@link", "}")
-        }
+    override fun getLinkText(element: PsiDocCommentOwner, comment: String): String? {
+        if(comment.contains("["))
+            return comment.substringBetween("[", "]")
+
         return null
     }
 }

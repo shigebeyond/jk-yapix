@@ -14,6 +14,7 @@ import io.yapix.parse.model.ControllerApiInfo
 import io.yapix.parse.model.MethodParseData
 import io.yapix.parse.parser.AbstractApiParser
 import io.yapix.parse.parser.IRequestParser
+import io.yapix.parse.parser.ResponseParser
 import io.yapix.parse.util.PathUtils
 import io.yapix.parse.util.PsiAnnotationUtils
 import io.yapix.parse.util.doc.PsiDocCommentHelperProxy
@@ -31,6 +32,9 @@ public class SpringApiParser(project: Project, module: Module, settings: YapixCo
 
     // 请求解析器
     protected override val requestParser: IRequestParser = SpringRequestParser(project, module, settings)
+
+    // 响应解析器
+    protected override val responseParser: ResponseParser = ResponseParser(project, module, settings)
 
     /**
      * 判断是否是控制类或接口

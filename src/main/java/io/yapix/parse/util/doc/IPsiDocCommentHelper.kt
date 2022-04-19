@@ -50,7 +50,7 @@ interface IPsiDocCommentHelper {
 
     /**
      * 获取注释中link标记的内容
-     *   对类的引用：java {@link io.yapix.model.Property}
+     *   对类的引用: 如 java {@link io.yapix.model.Property}, kotlin [io.yapix.model.Property]
      */
-    fun getInlineLinkContent(element: PsiDocCommentOwner): String?
+    fun getLinkText(element: PsiDocCommentOwner, comment: String): String?
 }

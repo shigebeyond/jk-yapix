@@ -80,9 +80,9 @@ object PsiDocCommentHelperProxy: IPsiDocCommentHelper {
 
     /**
      * 获取注释中link标记的内容
-     *   对类的引用：java {@link io.yapix.model.Property}
+     *   对类的引用: 如 java {@link io.yapix.model.Property}, kotlin [io.yapix.model.Property]
      */
-    override fun getInlineLinkContent(element: PsiDocCommentOwner): String? {
-        return getTargetHelper(element).getInlineLinkContent(element)
+    override fun getLinkText(element: PsiDocCommentOwner, comment: String): String? {
+        return getTargetHelper(element).getLinkText(element, comment)
     }
 }

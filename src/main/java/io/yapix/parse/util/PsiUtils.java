@@ -72,8 +72,15 @@ public class PsiUtils {
         return psiClass;
     }
 
-    public static PsiMethod[] getGetterMethods(PsiClass psiClass) {
-        return Arrays.stream(psiClass.getAllMethods()).filter(method -> {
+    /**
+     * 获得getter方法
+     * @param psiClass
+     * @param onlyThisClassMethod 是否仅限于当前类的方法，否则包含父类的方法
+     * @return
+     */
+    public static PsiMethod[] getGetterMethods(PsiClass psiClass, boolean onlyThisClassMethod) {
+        PsiMethod[] methods = onlyThisClassMethod ? psiClass.getMethods() : psiClass.getAllMethods();
+        return Arrays.stream(methods).filter(method -> {
             String methodName = method.getName();
             PsiType returnType = method.getReturnType();
             PsiModifierList modifierList = method.getModifierList();

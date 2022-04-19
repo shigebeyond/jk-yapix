@@ -163,10 +163,10 @@ public abstract class AbstractAction extends AnAction {
                 continue;
             }
             List<Api> controllerApis = controllerData.getApis();
-            if (config.isStrict()) {
+            /*if (config.isStrict()) {
                 controllerApis = controllerApis.stream().filter(o -> StringUtils.isNotEmpty(o.getSummary()))
                         .collect(Collectors.toList());
-            }
+            }*/
             apis.addAll(controllerApis);
         }
         return StepResult.ok(apis);
