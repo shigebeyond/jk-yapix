@@ -1,5 +1,5 @@
 # jk-yapix 改造文档
-> 先向yapix作者致谢，本插件是基于[yapix](https://github.com/jetplugins/yapix) 重构与改造，支持以下特性
+> 先向yapix作者致谢，本插件是基于[yapix](https://github.com/jetplugins/yapix) 重构与改造，支持以下新的特性
 
 **支持解析kotlin代码**
 
