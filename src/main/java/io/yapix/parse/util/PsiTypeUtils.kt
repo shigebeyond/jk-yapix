@@ -8,6 +8,7 @@ import com.intellij.psi.PsiPrimitiveType
 import com.intellij.psi.PsiType
 import com.intellij.psi.impl.source.PsiClassReferenceType
 import com.intellij.psi.util.PsiTypesUtil
+import com.itangcent.intellij.jvm.standard.StandardJvmClassHelper
 import io.yapix.model.DataTypes
 import io.yapix.parse.constant.JavaConstants
 import io.yapix.parse.parser.DataTypeParser
@@ -16,10 +17,26 @@ import io.yapix.parse.parser.DataTypeParser
  * PsiType相关工具.
  */
 object PsiTypeUtils {
+
     /**
-     * 是否是原生类型
+     * 是否是原始类型
+     */
+    fun isPrimitive(typeName: String): Boolean {
+        return StandardJvmClassHelper.isPrimitive(typeName)
+    }
+
+    /**
+     * 获得原始类型
+     */
+    fun getPrimitiveType(typeName: String): PsiType? {
+        return StandardJvmClassHelper.getPrimitiveType(typeName)
+    }
+
+    /**
+     * 是否是原始类型
      */
     fun isPrimitive(type: PsiType): Boolean {
+        PsiPrimitiveType.LONG
         return type is PsiPrimitiveType
     }
 

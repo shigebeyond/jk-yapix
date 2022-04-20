@@ -19,13 +19,9 @@ class JkmvcResponseParser(project: Project, module: Module, settings: YapixConfi
 
     override fun parse(method: PsiMethod): Property? {
         // 1 先尝试解析注释
-        val ret = PsiDocCommentHelperProxy.getTagText(method, DocumentTags.Return) // 获得 @return 标签
-        if(ret != null) {
-            val type = KtPsiDocCommentHelper.getLinkText(method, ret) // 获得 @return 标签 中link的类
-            // 解析
-            if(type != null)
-                return kernelParser.parseType(null, type)
-        }
+        val type = PsiDocCommentHelperProxy.getReturnTagLinkText(method)// 获得 @return 标记 中link的类
+        if(type != null) // 解析
+            return kernelParser.parseType(null, type, method)
 
         // 2 再解析方法返回值
         return super.parse(method)

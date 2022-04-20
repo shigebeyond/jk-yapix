@@ -9,6 +9,7 @@ import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiModifier
 import com.intellij.psi.search.GlobalSearchScope
 import io.yapix.config.YapixConfig
+import io.yapix.config.YapixConfigUtils
 import io.yapix.model.Api
 import io.yapix.model.HttpMethod
 import io.yapix.parse.constant.DocumentTags
@@ -21,6 +22,8 @@ import io.yapix.parse.parser.ResponseParser
 import io.yapix.parse.util.PathUtils
 import io.yapix.parse.util.PsiUtils
 import io.yapix.parse.util.doc.PsiDocCommentHelperProxy
+import net.jkcode.jkutil.common.Config
+import net.jkcode.jkutil.common.camel2Underline
 import org.apache.commons.lang3.StringUtils
 import net.jkcode.jkutil.common.lcFirst
 
@@ -86,9 +89,7 @@ public class JkmvcApiParser(project: Project, module: Module, settings: YapixCon
      * 解析类级别信息
      */
     override fun parseController(controller: PsiClass): ControllerApiInfo? {
-        // TODO: controller.qualifiedName 是类全路径，需要去掉http.yaml中指定的包名
-        // 目前仅仅是简单处理，取controller名即
-        var path: String = controller.name!!.removeSuffix("Controller").lcFirst()
+        var path: String = getControllerPath(controller)
         val info = ControllerApiInfo()
         info.path = PathUtils.path(path)
         info.declareCategory = parseHelper.getDeclareApiCategory(controller)
@@ -97,6 +98,31 @@ public class JkmvcApiParser(project: Project, module: Module, settings: YapixCon
             info.category = parseHelper.getDefaultApiCategory(controller)
         }
         return info
+    }
+
+    /**
+     * 获得controller的uri前缀
+     */
+    private fun getControllerPath(controller: PsiClass): String {
+        // 目前仅仅是简单处理，取controller名即
+        return controller.name!!.removeSuffix("Controller").lcFirst()
+
+        /* TODO: controller.qualifiedName 是类全路径，需要去掉http.yaml中指定的包名, 但jkmvc暂时还不支持多一层子包的controller路由解析
+        var path = controller.qualifiedName!!
+
+        // 1 加载 http.yaml
+        val file = YapixConfigUtils.findResourceFile(project, module, "http.yaml")
+        val config = Config.buildProperties(file.path, "yaml")
+        // 2 获得加载controller的包名
+        val packs = config["controllerPackages"] as List<String>
+        for (pack in packs){
+            if(path.contains(pack)){
+                path = path.removePrefix(pack).removeSuffix("Controller")
+                break
+            }
+        }
+        return path.replace('.', '/')
+        */
     }
 
     /**

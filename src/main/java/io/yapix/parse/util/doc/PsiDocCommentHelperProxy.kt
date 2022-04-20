@@ -26,11 +26,12 @@ object PsiDocCommentHelperProxy: IPsiDocCommentHelper {
     }
 
     /**
-     * 获取标记自定义字段名(包括字段描述)
-     * @param element 文档元素
+     * 获取@param标记的字段名+字段描述
+     * @param element 文档元素，一般指方法
+     * @return Map<字段名, 字段描述>
      */
-    override fun getTagParamTextMap(element: PsiDocCommentOwner): Map<String, String> {
-        return getTargetHelper(element).getTagParamTextMap(element)
+    override fun getParamTagTextMap(element: PsiDocCommentOwner): Map<String, String> {
+        return getTargetHelper(element).getParamTagTextMap(element)
     }
 
     /**
@@ -88,6 +89,7 @@ object PsiDocCommentHelperProxy: IPsiDocCommentHelper {
     /**
      * 获取注释中link标记的内容
      *   对类的引用: 如 java {@link io.yapix.model.Property}, kotlin [io.yapix.model.Property]
+     *   返回 io.yapix.model.Property
      */
     override fun getLinkText(element: PsiDocCommentOwner, comment: String): String? {
         return getTargetHelper(element).getLinkText(element, comment)

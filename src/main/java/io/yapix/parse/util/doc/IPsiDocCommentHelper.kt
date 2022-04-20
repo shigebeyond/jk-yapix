@@ -1,6 +1,7 @@
 package io.yapix.parse.util.doc
 
 import com.intellij.psi.PsiDocCommentOwner
+import io.yapix.parse.constant.DocumentTags
 
 /**
  * PsiDocComment相关工具类
@@ -8,10 +9,24 @@ import com.intellij.psi.PsiDocCommentOwner
 interface IPsiDocCommentHelper {
 
     /**
-     * 获取标记自定义字段名(包括字段描述)
-     * @param element 文档元素
+     * 获取@param标记的字段名+字段描述
+     * @param element 文档元素，一般指方法
+     * @return Map<字段名, 字段描述>
      */
-    fun getTagParamTextMap(element: PsiDocCommentOwner): Map<String, String>
+    fun getParamTagTextMap(element: PsiDocCommentOwner): Map<String, String>
+
+    /**
+     * 获取@return标记的link文本
+     * @param element 文档元素，一般指方法
+     * @return
+     */
+    fun getReturnTagLinkText(element: PsiDocCommentOwner): String?{
+        val ret = getTagText(element, DocumentTags.Return) // 获得 @return 标记
+        if(ret != null)
+            return getLinkText(element, ret) // 获得 @return 标记 中link的类
+
+        return null
+    }
 
     /**
      * 获取标记自定义字段名(不包括字段描述)
@@ -56,6 +71,7 @@ interface IPsiDocCommentHelper {
     /**
      * 获取注释中link标记的内容
      *   对类的引用: 如 java {@link io.yapix.model.Property}, kotlin [io.yapix.model.Property]
+     *   返回 io.yapix.model.Property
      */
     fun getLinkText(element: PsiDocCommentOwner, comment: String = getDocCommentText(element)!!): String?
 }

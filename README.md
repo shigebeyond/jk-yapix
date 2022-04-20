@@ -1,5 +1,39 @@
-# Yapi X
-> 本项目已收录到[YApi](https://github.com/YMFE/yapi), [Rap2](https://github.com/thx/rap2-delos)官方仓库
+# jkcode-yapix 改造文档
+> 先向yapix作者致谢，本插件是基于[yapix](https://github.com/jetplugins/yapix) 重构与改造，支持以下特性
+
+** 支持解析kotlin代码**
+
+** 支持解析jkmvc框架的api**
+
+从jkmvc框架的controller类方法的注释中提取api接口信息
+1. 请求参数格式为 `@param 参数名*:类型=默认值`，其中`*`表示必填
+2. 返回值（响应）格式为`@return [类名]`，响应数据结构优先取方法注释中`@return`链接的类，如果没有再取方法返回值类型
+例子
+```kotlin
+/**
+ * 详情页
+ * @param id:int=0 用户id
+ * @return [UserModel]
+ */
+public fun detail()
+```
+
+有以下限制：
+1. 写死post方法
+2. 不支持json提交，只支持form提交
+
+** 支持类短名, 即省略包名**
+
+适用于于以下3种类: import的类、当前包的类、java.util包的类
+
+** 重构优化**
+1. 抽象`IApiParser`类族，方便支持其他web框架的api提取
+2. 抽象`IPsiDocCommentHelper`类族，统一与兼容java/kotlin的注释解析
+3. 优化`PsiLinkUtils`, 支持根据类短名来获得psi类，方便类引用
+4. 优化类型解析:`KernelParser#doParseType()` 先过滤原始类型，以便减少无用的类型查找来优化性能 + 支持string类简写
+
+# 原框架 Yapi X 文档
+> 本项目已收录到[YApi](https://github.com/YMFE/yapi), [Rap2](https://github.com/thx/rap2-delos) 官方仓库
 
 **一键生成API接口文档, 上传到YApi, Rap2, Eolinker等平台的IDEA插件.**
 

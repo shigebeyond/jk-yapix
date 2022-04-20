@@ -115,13 +115,13 @@ public class SpringRequestParser implements IRequestParser {
         if (!httpMethod.isAllowBody()) {
             return Lists.newArrayList();
         }
-        Map<String, String> paramTagMap = PsiDocCommentHelperProxy.INSTANCE.getTagParamTextMap(method);
+        Map<String, String> paramTagMap = PsiDocCommentHelperProxy.INSTANCE.getParamTagTextMap(method);
 
         // Json请求: 找到@RequestBody注解参数
         PsiParameter bp = parameters.stream()
                 .filter(p -> p.getAnnotation(RequestBody) != null).findFirst().orElse(null);
         if (bp != null) {
-            Property item = kernelParser.parseType(bp.getType(), bp.getType().getCanonicalText());
+            Property item = kernelParser.parseType(bp.getType(), bp.getType().getCanonicalText(), method);
 
             // 方法上的参数描述
             String parameterDescription = paramTagMap.get(bp.getName());
@@ -136,7 +136,7 @@ public class SpringRequestParser implements IRequestParser {
         List<PsiParameter> fileParameters = parameters.stream()
                 .filter(p -> PsiTypeUtils.isFileIncludeArray(p.getType())).collect(Collectors.toList());
         for (PsiParameter p : fileParameters) {
-            Property item = kernelParser.parseType(p.getType(), p.getType().getCanonicalText());
+            Property item = kernelParser.parseType(p.getType(), p.getType().getCanonicalText(), method);
             item.setType(DataTypes.FILE);
             item.setName(p.getName());
             item.setRequired(true);
@@ -171,11 +171,11 @@ public class SpringRequestParser implements IRequestParser {
                 .collect(Collectors.toList());
 
         // 获取方法@param标记信息
-        Map<String, String> paramTagMap = PsiDocCommentHelperProxy.INSTANCE.getTagParamTextMap(method);
+        Map<String, String> paramTagMap = PsiDocCommentHelperProxy.INSTANCE.getParamTagTextMap(method);
 
         List<Property> items = Lists.newArrayListWithExpectedSize(parameters.size());
         for (PsiParameter parameter : parameters) {
-            Property item = doParseParameter(parameter);
+            Property item = doParseParameter(method, parameter);
             item.setDescription(parseHelper.getParameterDescription(parameter, paramTagMap, item.getValues()));
             // 当参数是bean时，需要获取bean属性作为参数
             List<Property> parameterItems = resolveItemToParameters(item);
@@ -203,8 +203,8 @@ public class SpringRequestParser implements IRequestParser {
     /**
      * 解析单个参数
      */
-    private Property doParseParameter(PsiParameter parameter) {
-        Property item = kernelParser.parseType(parameter.getType(), parameter.getType().getCanonicalText());
+    private Property doParseParameter(PsiMethod method, PsiParameter parameter) {
+        Property item = kernelParser.parseType(parameter.getType(), parameter.getType().getCanonicalText(), method);
         dateParser.handle(item, parameter);
 
         // 处理参数注解: @RequestParam等

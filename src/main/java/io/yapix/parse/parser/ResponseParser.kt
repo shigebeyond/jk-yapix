@@ -51,7 +51,7 @@ open class ResponseParser(private val project: Project, private val module: Modu
         }
 
         // 解析
-        val item = kernelParser.parseType(type, typeText)
+        val item = kernelParser.parseType(type, typeText, method)
         if (item != null) {
             item.description = parseHelper.getTypeDescription(type, item.values)
         }

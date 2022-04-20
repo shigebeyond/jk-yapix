@@ -80,6 +80,12 @@ class ParseHelper(private val project: Project, private val module: Module) {
         if (psiMethod.body != null) {
             description = description.replace(psiMethod.body!!.text, "")
         }
+        // 去掉函数实现,即{}包住的代码块
+        val idxComment = description.indexOf("*/") // 注释结束
+        if(idxComment != -1) { // 有注释
+            val idxImpl = description.indexOf('{', idxComment + 2)
+            description = description.substring(0, idxImpl).trim()
+        }
         description = description.replace("<", "&lt;").replace(">", "&gt;")
         return "   <pre><code>    $description</code></pre>"
     }
@@ -254,9 +260,8 @@ class ParseHelper(private val project: Project, private val module: Module) {
         val isEnum = PsiTypeUtils.isEnum(psiType)
         if (isEnum) {
             val enumPsiClass = PsiTypeUtils.getEnumClassIncludeArray(project, module, psiType)
-            if (enumPsiClass != null) {
+            if (enumPsiClass != null)
                 return getEnumValues(enumPsiClass)
-            }
         }
 
         return null

@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory
 /**
  * Api接口解析器基类
  */
-abstract class AbstractApiParser(protected val project: Project, module: Module, settings: YapixConfig) : IApiParser {
+abstract class AbstractApiParser(protected val project: Project, protected val module: Module, settings: YapixConfig) : IApiParser {
 
     // 请求解析器
     protected abstract val requestParser: IRequestParser

@@ -56,6 +56,25 @@ public final class YapixConfigUtils {
         return yapiConfigFile;
     }
 
+    /**
+     * 查找资源文件
+     * @param file 要查找的文件名, 如 http.yaml
+     * @return 找到的文件路径, 如 项目路径/src/main/resources/http.yaml
+     */
+    public static VirtualFile findResourceFile(Project project, Module module, String file) {
+        VirtualFile yapiConfigFile = null;
+        if (module != null) {
+            VirtualFile[] moduleContentRoots = ModuleRootManager.getInstance(module).getContentRoots();
+            if (moduleContentRoots.length > 0) {
+                yapiConfigFile = moduleContentRoots[0].findFileByRelativePath("resources/" + file);
+            }
+        }
+        if (yapiConfigFile == null || !yapiConfigFile.exists()) {
+            yapiConfigFile = project.getBaseDir().findFileByRelativePath("src/main/resources/" + file);
+        }
+        return yapiConfigFile;
+    }
+
     public static YapixConfig readYapixConfig(VirtualFile vf) throws IOException {
         String content = new String(vf.contentsToByteArray(), StandardCharsets.UTF_8);
         Properties properties = new Properties();

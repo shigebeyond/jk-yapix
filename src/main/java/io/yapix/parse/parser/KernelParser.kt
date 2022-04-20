@@ -4,10 +4,7 @@ import com.google.common.collect.Maps
 import com.google.common.collect.Sets
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
-import com.intellij.psi.JavaPsiFacade
-import com.intellij.psi.PsiArrayType
-import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiType
+import com.intellij.psi.*
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTypesUtil
 import io.yapix.base.util.NotificationUtils
@@ -48,10 +45,11 @@ class KernelParser(private val project: Project, private val module: Module, pri
      *   对象:解析属性为Property.properties
      * @param psiType
      * @param canonicalType
+     * @param srcMethod 来源的方法，要先排除该方法的类
      * @return
      */
-    fun parseType(psiType: PsiType?, canonicalType: String?): Property? {
-        return doParseType(psiType, canonicalType!!, Sets.newHashSet())
+    fun parseType(psiType: PsiType?, canonicalType: String?, srcMethod: PsiMethod): Property? {
+        return doParseType(psiType, canonicalType!!, mutableSetOf(srcMethod.containingClass!!))
     }
 
     /**
@@ -85,9 +83,22 @@ class KernelParser(private val project: Project, private val module: Module, pri
         if (PsiTypeUtils.isVoid(type))
             return null
 
-        // 获得类型的PsiClass
+        // 先过滤原始类型，以便减少查找其他类型，优化性能
+        val primitiveType = PsiTypeUtils.getPrimitiveType(type)
+        if(primitiveType != null){
+            item.type = dataTypeParser.parseType(primitiveType)
+            return item
+        }
+        // string类简写处理: 虽然string不属于原始类型，但很常用，支持简写, 参考 types.properties
+        val strTypes = "string|date"
+        if(strTypes.contains(type.toLowerCase())){
+            item.type = "string"
+            return item
+        }
+
+        // 获得非原始类型的PsiClass
         // val psiClass = PsiUtils.findPsiClass(project, module, type)
-        val psiClass = PsiLinkUtils.getLinkClass(chains.last(), type)
+        val psiClass = PsiLinkUtils.getLinkClass(chains.last() /*发起调用的类*/, type)
         if (psiClass != null)
             psiType = PsiTypesUtil.getClassType(psiClass)
         if (psiType == null)

@@ -32,7 +32,7 @@ public fun PsiDocCommentOwner.findKDoc(): KDocSection? {
 
 
 /**
- * 获得注释标签的内容
+ * 获得注释标记的内容
  */
 public fun KDocTag.contentOrLink(): String? {
     val content = this.getContent()

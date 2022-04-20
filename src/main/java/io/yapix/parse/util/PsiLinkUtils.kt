@@ -33,12 +33,11 @@ object PsiLinkUtils {
             return psiClass
 
         // 2 非全路径，尝试获得全路径
-        var fullPath = classPath
         // 2.1 处理import的类
         val imports = PsiUtils.getImportsInFile(element.containingFile)
 
         // 将类路径拆为2片段
-        val parts = fullPath.split('.', limit = 2)
+        val parts = classPath.split('.', limit = 2)
         val key = parts[0] // 要跟import对比的片段
         var rest = "" // 剩余片段
         if (parts.size > 1)
@@ -47,20 +46,20 @@ object PsiLinkUtils {
         // 命中import的类
         if (key in imports) {
             // 加上import的全路径
-            fullPath = imports[key] + rest
+            val fullPath = imports[key] + rest
             psiClass = PsiUtils.findPsiClass(project, null, fullPath)
         }
 
         // 2.2 处理同包的类
         if (psiClass == null) {
             // 加上包名的全路径
-            fullPath = (((element.parent as PsiClassImpl).context as PsiClassOwner).packageName + "." + fullPath)
+            val fullPath = PsiUtils.getPakcageName(element) + "." + classPath
             psiClass = PsiUtils.findPsiClass(project, null, fullPath)
         }
 
-        // 2.3 处理java.util包的类简写: 如果类不存在(如List)，则尝试加上 java.util.，变为 java.util.List
-        if(psiClass == null && !fullPath.contains('.')){
-            fullPath = "java.util." + fullPath
+        // 2.3 处理java.util包的类短名: 如果类不存在(如List)，则尝试加上 java.util.，变为 java.util.List
+        if(psiClass == null && !classPath.contains('.')){
+            val fullPath = "java.util." + classPath
             psiClass = PsiUtils.findPsiClass(project, null, fullPath)
         }
 

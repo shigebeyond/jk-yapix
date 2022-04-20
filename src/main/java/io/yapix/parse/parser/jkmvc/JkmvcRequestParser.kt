@@ -79,7 +79,7 @@ class JkmvcRequestParser(project: Project, module: Module, private val settings:
      */
     fun getRequestParameters(method: PsiMethod): MutableList<Property> {
         // 获取方法@param标记信息
-        val paramTagMap = PsiDocCommentHelperProxy.getTagParamTextMap(method)
+        val paramTagMap = PsiDocCommentHelperProxy.getParamTagTextMap(method)
         val items: MutableList<Property> = Lists.newArrayListWithExpectedSize(paramTagMap.size)
         for (param in paramTagMap){
             val item = doParseParameter(method, param)
@@ -111,27 +111,27 @@ class JkmvcRequestParser(project: Project, module: Module, private val settings:
     /**
      * 解析单个参数
      * @param method
-     * @param paramTag 参数注释，如 @param 参数名*:类型:默认值，其中*表示必填
+     * @param paramTag 参数注释，如 @param 参数名*:类型=默认值，其中*表示必填
      */
     private fun doParseParameter(method: PsiMethod, paramTag: Map.Entry<String, String>): Property? {
         /**
          * paramTag.key = 参数名
-         * paramTag.value = *:类型:默认值 描述
+         * paramTag.value = *:类型=默认值 描述
          */
         // 解析参数注释
         val name = paramTag.key.trim() // 参数
-        val other = paramTag.value.trim() // *:类型:默认值 描述
+        val other = paramTag.value.trim() // *:类型=默认值 描述
 
         var description = other // 参数描述
         var required = false
         var type = DataTypes.STRING
         var defaultValue: String? = null
 
-        // *:类型:默认值 描述
+        // *:类型=默认值 描述
         if(other.startsWith("*:") || other.startsWith(":")) {
-            // 空格前 -- *:类型:默认值
+            // 空格前 -- *:类型=默认值
             val typeDefault = other.substringBefore(' ')
-            val part = typeDefault.split(':') // *参数名:类型:默认值
+            val part = typeDefault.split(':', '=') // *参数名:类型=默认值
             required = part[0] == "*" // 必填
             type = part.getOrNull(1) ?: DataTypes.STRING // 类型
             defaultValue = part.getOrNull(2) // 默认值
@@ -154,12 +154,10 @@ class JkmvcRequestParser(project: Project, module: Module, private val settings:
          *    集合：解析泛型为Property.items
          *    对象:解析属性为Property.properties
          */
-        val item = kernelParser.parseType(null, type)!!
+        val item = kernelParser.parseType(null, type, method)!! // 解析类型，会填充 item.type / item.values
         item.required = required
         item.name = name
-        item.type = type
         item.defaultValue = defaultValue
-        item.values = null
         item.setIn(ParameterIn.query)
         item.description = description
         return item

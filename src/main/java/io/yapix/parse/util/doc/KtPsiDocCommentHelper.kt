@@ -17,10 +17,11 @@ import java.util.*
 object KtPsiDocCommentHelper: IPsiDocCommentHelper {
 
     /**
-     * 获取标记自定义字段名(包括字段描述)
-     * @param element 文档元素
+     * 获取@param标记的字段名+字段描述
+     * @param element 文档元素，一般指方法
+     * @return Map<字段名, 字段描述>
      */
-    override fun getTagParamTextMap(element: PsiDocCommentOwner): Map<String, String> {
+    override fun getParamTagTextMap(element: PsiDocCommentOwner): Map<String, String> {
         val map: MutableMap<String, String> = HashMap()
         val tags = findTagsByName(element, DocumentTags.Param)
         for (tag in tags) {
@@ -61,8 +62,7 @@ object KtPsiDocCommentHelper: IPsiDocCommentHelper {
         if (tag == null)
             return null
 
-        val splits = tag.getContent().split("\\s".toRegex(), 2)
-        return splits.firstOrNull()
+        return tag.getContent()
     }
 
     /**
@@ -122,11 +122,11 @@ object KtPsiDocCommentHelper: IPsiDocCommentHelper {
     /**
      * 获取注释中link标记的内容
      *   对类的引用: 如 java {@link io.yapix.model.Property}, kotlin [io.yapix.model.Property]
-     * @return
+     *   返回 io.yapix.model.Property
      */
     override fun getLinkText(element: PsiDocCommentOwner, comment: String): String? {
         if(comment.contains("["))
-            return comment.substringBetween("[", "]")
+            return comment.substringBetween("[", "]").trim() // 去空格，否则类路径不对
 
         return null
     }

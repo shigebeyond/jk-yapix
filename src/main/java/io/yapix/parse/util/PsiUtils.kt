@@ -8,6 +8,8 @@ import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiJavaFileImpl
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.PsiShortNamesCache
+import net.jkcode.jkutil.common.getFunction
+import org.jetbrains.kotlin.asJava.elements.FakeFileForLightClass
 import org.jetbrains.kotlin.psi.KtFile
 import java.util.*
 import java.util.function.IntFunction
@@ -15,18 +17,35 @@ import java.util.function.IntFunction
 object PsiUtils {
 
     /**
+     * 获得包名
+     */
+    public fun getPakcageName(element: PsiDocCommentOwner): String {
+        val file = element.containingFile
+        if(file is PsiJavaFileImpl)
+            return file.packageName
+
+        if(file is FakeFileForLightClass)
+            return file.packageName
+
+        //反射调用
+        return file::class.getFunction("getPackageName")!!.call(file) as String
+    }
+
+    /**
      * 获得import列表
+     * @param file
+     * @return Map<类短名, 类全名>
      */
     public fun getImportsInFile(file: PsiFile): Map<String, String>{
         var r: Map<String, String>? = null
         if(file is PsiJavaFileImpl)
             r = file.importList?.allImportStatements?.associate {
-                val path = it.importReference!!.qualifiedName
-                path.substringBeforeLast('.') to path
+                val ref = it.importReference!!
+                ref.referenceName!! to ref.qualifiedName!!
             }
-        else if(file is KtFile)
-            r = file.importList?.imports?.associate {
-                it.importPath!!.alias.toString() to it.importPath!!.fqName.toString()
+        else if(file is FakeFileForLightClass)
+            r = file.ktFile.importList?.imports?.associate {
+                it.importedName.toString() to it.importedFqName.toString()
             }
 
         return r ?: emptyMap()
