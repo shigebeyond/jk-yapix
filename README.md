@@ -3,9 +3,9 @@
 
 **支持解析kotlin代码**
 
-**支持解析jkmvc框架的api**
+**支持导出jkmvc框架的api接口**
 
-从jkmvc框架的controller类方法的注释中提取api接口信息
+从jkmvc框架的controller类的javadoc中导出api接口信息:
 1. 请求参数格式为 `@param 参数名*:类型=默认值`，其中`*`表示必填
 2. 返回值（响应）格式为`@return [类名]`，响应数据结构优先取方法注释中`@return`链接的类，如果没有再取方法返回值类型
 例子
