@@ -1,4 +1,4 @@
-# jkcode-yapix 改造文档
+# jk-yapix 改造文档
 > 先向yapix作者致谢，本插件是基于[yapix](https://github.com/jetplugins/yapix) 重构与改造，支持以下特性
 
 **支持解析kotlin代码**
@@ -24,7 +24,10 @@ public fun detail()
 
 **支持类短名, 即省略包名**
 
-适用于于以下3种类: import的类、当前包的类、java.util包的类
+适用于于以下3种类: 
+1. import的类
+2. 当前包的类
+3. java.util包的类
 
 **重构优化**
 1. 抽象`IApiParser`类族，方便支持其他web框架的api提取
