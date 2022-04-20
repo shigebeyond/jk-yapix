@@ -84,7 +84,7 @@ open class ResponseParser(private val project: Project, private val module: Modu
         val returnClass = PsiUtils.findPsiClass(project, module, settings.returnWrapType) ?: return null
 
         // 是否是byte[]
-        val returnType = method.returnType
+        val returnType = method.returnType!!
         if (PsiTypeUtils.isBytes(returnType))
             return null
 

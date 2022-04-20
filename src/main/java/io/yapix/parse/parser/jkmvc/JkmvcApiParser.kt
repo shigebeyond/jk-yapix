@@ -19,6 +19,7 @@ import io.yapix.parse.parser.AbstractApiParser
 import io.yapix.parse.parser.IRequestParser
 import io.yapix.parse.parser.ResponseParser
 import io.yapix.parse.util.PathUtils
+import io.yapix.parse.util.PsiUtils
 import io.yapix.parse.util.doc.PsiDocCommentHelperProxy
 import org.apache.commons.lang3.StringUtils
 import net.jkcode.jkutil.common.lcFirst
@@ -52,7 +53,7 @@ public class JkmvcApiParser(project: Project, module: Module, settings: YapixCon
     /**
      * controller基类
      */
-    protected val controllerBaseClass = JavaPsiFacade.getInstance(project).findClass("net.jkcode.jkmvc.http.controller.Controller", GlobalSearchScope.allScope(project))!!
+    protected val controllerBaseClass = PsiUtils.findPsiClass(project, null, "net.jkcode.jkmvc.http.controller.Controller")!!
 
     /**
      * 判断是否是控制类或接口

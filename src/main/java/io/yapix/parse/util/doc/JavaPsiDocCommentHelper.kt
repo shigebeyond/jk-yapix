@@ -7,6 +7,7 @@ import com.intellij.psi.javadoc.PsiDocTag
 import com.intellij.psi.javadoc.PsiDocToken
 import com.intellij.psi.search.GlobalSearchScope
 import io.yapix.parse.constant.DocumentTags
+import io.yapix.parse.util.PsiUtils
 import net.jkcode.jkutil.common.substringBetween
 import java.util.*
 
@@ -132,73 +133,6 @@ object JavaPsiDocCommentHelper : IPsiDocCommentHelper {
             return comment.substringBetween("{@link", "}")
 
         return null
-    }
-
-    /**
-     * @description: 获得link 备注
-     * @param: [remark, project, field]
-     * @return: java.lang.String
-     * @author: chengsheng@qbb6.com
-     * @date: 2019/5/18
-     */
-    fun getLinkRemark(field: PsiField): String? {
-        var remark = ""
-
-        var linkAddress = getLinkText(field)
-        if (linkAddress == null)
-            return null
-
-        val project = field.project
-        var psiClassLink = JavaPsiFacade.getInstance(project)
-            .findClass(linkAddress, GlobalSearchScope.allScope(project))
-        if (psiClassLink == null) {
-            //可能没有获得全路径，尝试获得全路径
-            val imports = field.containingFile.importsInFile()
-            val parts = linkAddress.split('.', limit = 2)
-            val key = parts[0]
-            if(parts.size > 1)
-                linkAddress = parts[1] // 剩下部分
-            if(key in imports){
-                linkAddress = imports[key] + '.' + linkAddress
-                // 继续查找类
-                psiClassLink = JavaPsiFacade.getInstance(project).findClass(linkAddress, GlobalSearchScope.allScope(project))
-            }
-
-            if (psiClassLink == null) {
-                //如果是同包情况
-                linkAddress = (((field.parent as PsiClassImpl).context as PsiClassOwner).packageName + "." + linkAddress)
-                psiClassLink = JavaPsiFacade.getInstance(project).findClass(linkAddress, GlobalSearchScope.allScope(project))
-            }
-            //如果小于等于一为不存在import，不做处理
-        }
-
-        if (Objects.nonNull(psiClassLink)) {
-            //说明获得了link 的class
-            val linkFields = psiClassLink!!.fields
-            if (linkFields.size > 0) {
-                remark += "," + psiClassLink.name + "["
-                for (i in linkFields.indices) {
-                    val psiField = linkFields[i]
-                    if (i > 0) {
-                        remark += ","
-                    }
-                    // 先获得名称
-                    remark += psiField.name
-                    // 后获得value,通过= 来截取获得，第二个值，再截取;
-                    val splitValue = psiField.text.split("=".toRegex()).toTypedArray()
-                    if (splitValue.size > 1) {
-                        val value = splitValue[1].split(";".toRegex()).toTypedArray()[0]
-                        remark += ":$value"
-                    }
-                    val filedValue = PsiDocCommentHelperProxy.getDocCommentTitle(psiField)
-                    if (!Strings.isNullOrEmpty(filedValue)) {
-                        remark += "($filedValue)"
-                    }
-                }
-                remark += "]"
-            }
-        }
-        return remark
     }
 
 }

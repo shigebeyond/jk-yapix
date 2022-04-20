@@ -17,10 +17,7 @@ import io.yapix.model.DataTypes
 import io.yapix.model.Property
 import io.yapix.parse.constant.DocumentTags
 import io.yapix.parse.constant.JavaConstants
-import io.yapix.parse.util.PsiFieldUtils
-import io.yapix.parse.util.PsiGenericUtils
-import io.yapix.parse.util.PsiTypeUtils
-import io.yapix.parse.util.PsiUtils
+import io.yapix.parse.util.*
 import io.yapix.parse.util.doc.PsiDocCommentHelperProxy.getTagTextSet
 import org.apache.commons.lang3.StringUtils
 import java.util.*
@@ -89,16 +86,13 @@ class KernelParser(private val project: Project, private val module: Module, pri
             return null
 
         // 获得类型的PsiClass
-        var psiClass = PsiUtils.findPsiClass(project, module, type)
-        // 处理简写: 如果类不存在(如List)，则尝试加上 java.util.，变为 java.util.List
-        if(psiClass == null && !type.contains('.')){
-            type = "java.util." + type
-            psiClass = PsiUtils.findPsiClass(project, module, type)
-        }
+        // val psiClass = PsiUtils.findPsiClass(project, module, type)
+        val psiClass = PsiLinkUtils.getLinkClass(chains.last(), type)
         if (psiClass != null)
             psiType = PsiTypesUtil.getClassType(psiClass)
         if (psiType == null)
             return item
+
         /**
          * 获取字段类型
          * 1 数组、集合 -> array
@@ -138,7 +132,7 @@ class KernelParser(private val project: Project, private val module: Module, pri
             && (chains == null || !chains.contains(psiClass))) // 防止重复解析
         if (isNeedParseObject) {
             // 递归调用
-            val properties = doParseBean(type, genericTypes, psiClass, chains)
+            val properties = doParseBean(type, genericTypes, psiClass!!, chains)
             item.properties = properties
         }
         return item
@@ -211,7 +205,7 @@ class KernelParser(private val project: Project, private val module: Module, pri
             // 其实可以通过获取当前类的import作filter.
             // 但既然用户使用javadoc, 就应该对输入作严格规范, 而非对插件输出作强要求.
             val refPsiClass = PsiUtils.findPsiClass(project, module, typeName)
-                ?: PsiUtils.findPsiClassByShortName(project, module, typeName)
+                            ?: PsiUtils.findPsiClassByShortName(project, module, typeName)
 
             // 引用类必须跟当前类存在派生关系(适用于接口和实体类)
             if (refPsiClass == null || !refPsiClass.isInheritor(psiClass, true)) {

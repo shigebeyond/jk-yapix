@@ -12,6 +12,7 @@ import io.yapix.parse.util.*
 import io.yapix.parse.util.doc.PsiDocCommentHelperProxy.getDocCommentTagText
 import io.yapix.parse.util.doc.PsiDocCommentHelperProxy.getDocCommentTitle
 import io.yapix.parse.util.doc.PsiDocCommentHelperProxy.hasTagByName
+import net.jkcode.jkutil.common.camel2Underline
 import org.apache.commons.lang3.StringUtils
 import java.util.*
 import java.util.stream.Collectors
@@ -24,8 +25,8 @@ class ParseHelper(private val project: Project, private val module: Module) {
     /**
      * 获取方法描述
      */
-    fun getMethodDescription(psiMethod: PsiMethod?): String? {
-        return getDocCommentTitle(psiMethod!!)
+    fun getMethodDescription(psiMethod: PsiMethod): String? {
+        return getDocCommentTitle(psiMethod)
     }
 
     //----------------------- 接口Api相关 ------------------------------------//
@@ -48,27 +49,27 @@ class ParseHelper(private val project: Project, private val module: Module) {
      * 获得默认分类
      */
     fun getDefaultApiCategory(psiClass: PsiClass): String {
-        return StringUtilsExt.camelToLine(psiClass.name, null)
+        return psiClass.name!!.camel2Underline()
     }
 
     /**
      * 获取接口概述
      */
-    fun getApiSummary(psiMethod: PsiMethod?): String {
+    fun getApiSummary(psiMethod: PsiMethod): String? {
         // 优先级: swagger注解@ApiOperation > 文档注释标记@description >  文档注释第一行
         var summary = PsiSwaggerUtils.getApiSummary(psiMethod)
-        if (summary.isEmpty()) {
+        if (summary.isNullOrEmpty()) {
             val tags = arrayOf(DocumentTags.Description, DocumentTags.DescriptionYapiUpload)
             for (tag in tags) {
-                summary = getDocCommentTagText(psiMethod!!, tag)
-                if (summary.isNotEmpty())
+                summary = getDocCommentTagText(psiMethod, tag)
+                if (!summary.isNullOrEmpty())
                     break
             }
         }
-        if (summary.isEmpty()) {
-            summary = getDocCommentTitle(psiMethod!!)
+        if (summary.isNullOrEmpty()) {
+            summary = getDocCommentTitle(psiMethod)
         }
-        return summary.trim()
+        return summary?.trim()
     }
 
     /**
@@ -110,29 +111,29 @@ class ParseHelper(private val project: Project, private val module: Module) {
     /**
      * 获取参数描述
      */
-    fun getParameterDescription(parameter: PsiParameter, paramTagMap: Map<String?, String?>, values: List<Value>?): String {
+    fun getParameterDescription(parameter: PsiParameter, paramTagMap: Map<String?, String?>, values: List<Value>?): String? {
         // @ApiParam > @param
         var summary = PsiSwaggerUtils.getParameterDescription(parameter)
-        if (summary.isEmpty()) {
+        if (summary.isNullOrEmpty()) {
             summary = paramTagMap[parameter.name]
         }
         if (values != null && values.isNotEmpty()) {
             val valuesText = values.joinToString {
                 it.text
             }
-            if (summary.isEmpty()) {
+            if (summary.isNullOrEmpty()) {
                 summary = valuesText
             } else {
                 summary += " ($valuesText)"
             }
         }
-        return summary.trim()
+        return summary?.trim()
     }
 
     /**
      * 获取参数是否必填
      */
-    fun getParameterRequired(parameter: PsiParameter?): Boolean? {
+    fun getParameterRequired(parameter: PsiParameter): Boolean? {
         val annotations = arrayOf(JavaConstants.NotNull, JavaConstants.NotBlank, JavaConstants.NotEmpty)
         return annotations.any{ annotation ->
             PsiAnnotationUtils.hasAnnotation(parameter, annotation)
@@ -165,39 +166,39 @@ class ParseHelper(private val project: Project, private val module: Module) {
      */
     fun getFieldName(field: PsiField): String {
         val property = PsiAnnotationUtils.getStringAttributeValue(field, SpringConstants.JsonProperty)
-        return if (property.isNotBlank()) property else field.name
+        return if (property.isNullOrBlank()) field.name else property
     }
 
     /**
      * 获取字段描述
      */
-    fun getFieldDescription(field: PsiField?, values: List<Value>?): String {
+    fun getFieldDescription(field: PsiField, values: List<Value>?): String? {
         // 优先级: @ApiModelProperty > 文档注释标记@description >  文档注释第一行
         var summary = PsiSwaggerUtils.getFieldDescription(field)
-        if (summary.isEmpty()) {
-            summary = getDocCommentTitle(field!!)
+        if (summary.isNullOrEmpty()) {
+            summary = getDocCommentTitle(field)
         }
 
         // 枚举
-        if (values != null && !values.isEmpty()) {
+        if (!values.isNullOrEmpty()) {
             val valuesText = values.joinToString {
                 it.text
             }
-            if (summary.isEmpty()) {
+            if (summary.isNullOrEmpty()) {
                 summary = valuesText
             } else {
                 summary += " ($valuesText)"
             }
         } else {
-            summary = PsiLinkUtils.getLinkRemark(summary ?: "", field)
+            summary = (summary ?: "") + " " + PsiLinkUtils.getLinkRemark(field)
         }
-        return summary.trim()
+        return summary?.trim()
     }
 
     /**
      * 字段是否必填
      */
-    fun getFieldRequired(field: PsiField?): Boolean {
+    fun getFieldRequired(field: PsiField): Boolean {
         val annotations = arrayOf(JavaConstants.NotNull, JavaConstants.NotBlank, JavaConstants.NotEmpty)
         return annotations.any { annotation ->
             PsiAnnotationUtils.hasAnnotation(field, annotation)
