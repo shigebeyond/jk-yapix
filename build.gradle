@@ -53,15 +53,6 @@ repositories {
 }
 
 dependencies {
-    compile('com.itangcent:intellij-idea:1.1.7') {
-        exclude group: 'com.google.inject'
-        exclude group: 'com.google.code.gson'
-    }
-    compile('com.itangcent:intellij-kotlin-support:1.1.7') {
-        exclude group: 'com.google.inject'
-        exclude group: 'com.google.code.gson'
-    }
-
     compile "net.jkcode:jkutil:1.9.0"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
