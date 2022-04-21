@@ -8,7 +8,6 @@ import com.intellij.psi.PsiPrimitiveType
 import com.intellij.psi.PsiType
 import com.intellij.psi.impl.source.PsiClassReferenceType
 import com.intellij.psi.util.PsiTypesUtil
-import com.itangcent.intellij.jvm.standard.StandardJvmClassHelper
 import io.yapix.model.DataTypes
 import io.yapix.parse.constant.JavaConstants
 import io.yapix.parse.parser.DataTypeParser
@@ -19,17 +18,32 @@ import io.yapix.parse.parser.DataTypeParser
 object PsiTypeUtils {
 
     /**
+     * 原始类型映射
+     */
+    private val PRIMITIVE_TYPES: Map<String, PsiType> = mapOf(
+        PsiType.VOID.canonicalText to PsiType.VOID,
+        PsiType.BYTE.canonicalText to PsiType.BYTE,
+        PsiType.CHAR.canonicalText to PsiType.CHAR,
+        PsiType.DOUBLE.canonicalText to PsiType.DOUBLE,
+        PsiType.FLOAT.canonicalText to PsiType.FLOAT,
+        PsiType.LONG.canonicalText to PsiType.LONG,
+        PsiType.INT.canonicalText to PsiType.INT,
+        PsiType.SHORT.canonicalText to PsiType.SHORT,
+        PsiType.BOOLEAN.canonicalText to PsiType.BOOLEAN,
+    )
+
+    /**
      * 是否是原始类型
      */
     fun isPrimitive(typeName: String): Boolean {
-        return StandardJvmClassHelper.isPrimitive(typeName)
+        return PRIMITIVE_TYPES.contains(typeName)
     }
 
     /**
      * 获得原始类型
      */
     fun getPrimitiveType(typeName: String): PsiType? {
-        return StandardJvmClassHelper.getPrimitiveType(typeName)
+        return PRIMITIVE_TYPES[typeName]
     }
 
     /**
