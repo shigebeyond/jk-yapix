@@ -26,6 +26,8 @@ object PsiLinkUtils {
         if (classPath == null)
             return null
 
+        val classPath = classPath.substringBefore('<') // 去掉泛型
+
         // 1 直接全路径
         val project = element.project
         var psiClass = PsiUtils.findPsiClass(project, null, classPath)
@@ -57,7 +59,13 @@ object PsiLinkUtils {
             psiClass = PsiUtils.findPsiClass(project, null, fullPath)
         }
 
-        // 2.3 处理java.util包的类短名: 如果类不存在(如List)，则尝试加上 java.util.，变为 java.util.List
+        // 2.3 处理java.lang包的类短名: 如果类不存在(如String)，则尝试加上 java.lang.，变为 java.lang.String
+        if(psiClass == null && !classPath.contains('.')){
+            val fullPath = "java.lang." + classPath
+            psiClass = PsiUtils.findPsiClass(project, null, fullPath)
+        }
+
+        // 2.4 处理java.util包的类短名: 如果类不存在(如List)，则尝试加上 java.util.，变为 java.util.List
         if(psiClass == null && !classPath.contains('.')){
             val fullPath = "java.util." + classPath
             psiClass = PsiUtils.findPsiClass(project, null, fullPath)

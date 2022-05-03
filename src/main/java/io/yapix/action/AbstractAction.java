@@ -146,7 +146,7 @@ public abstract class AbstractAction extends AnAction {
 
         // 3 批量： 选中多个包或文件
         // 获取PsiClass: 从类文件(java/kotlin)中取得controller类
-        List<PsiClass> controllers = PsiFileUtils.getPsiClassByFile(data.selectedClassFiles);
+        List<PsiClass> controllers = PsiFileUtils.getPsiClassByFile(data.selectedClassFiles, false);
         if (controllers.isEmpty()) {
             NotificationUtils.notifyWarning(DefaultConstants.NAME, "Not found valid controller class");
             return StepResult.stop();
@@ -266,95 +266,4 @@ public abstract class AbstractAction extends AnAction {
         });
     }
 
-
-    public static class ApiUploadResult {
-
-        private String categoryUrl;
-        private String apiUrl;
-
-        //------------------ generated ------------------------//
-
-        public String getCategoryUrl() {
-            return categoryUrl;
-        }
-
-        public void setCategoryUrl(String categoryUrl) {
-            this.categoryUrl = categoryUrl;
-        }
-
-        public String getApiUrl() {
-            return apiUrl;
-        }
-
-        public void setApiUrl(String apiUrl) {
-            this.apiUrl = apiUrl;
-        }
-    }
-
-    static class EventData {
-
-        /**
-         * 源事件
-         */
-        AnActionEvent event;
-        /**
-         * 项目
-         */
-        Project project;
-
-        /**
-         * 模块
-         */
-        Module module;
-
-        /**
-         * 选择的文件
-         */
-        VirtualFile[] selectedFiles;
-
-        /**
-         * 选择的Java/Kotlin文件
-         */
-        // List<PsiJavaFile> selectedJavaFiles;
-        List<PsiClassOwner> selectedClassFiles;
-
-        /**
-         * 选择类
-         */
-        PsiClass selectedClass;
-
-        /**
-         * 选择方法
-         */
-        PsiMethod selectedMethod;
-
-        /**
-         * 是否应当继续解析处理
-         */
-        public boolean shouldHandle() {
-            return project != null && module != null && (selectedClassFiles != null || selectedClass != null);
-        }
-
-        /**
-         * 从事件中解析需要的通用数据
-         */
-        public static EventData of(AnActionEvent event) {
-            EventData data = new EventData();
-            data.event = event;
-            data.project = event.getData(CommonDataKeys.PROJECT);
-            data.module = event.getData(LangDataKeys.MODULE);
-            data.selectedFiles = event.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY);
-            if (data.project != null && data.selectedFiles != null) {
-                data.selectedClassFiles = PsiFileUtils.getPsiClassFiles(data.project, data.selectedFiles);
-            }
-            Editor editor = event.getDataContext().getData(CommonDataKeys.EDITOR);
-            PsiFile editorFile = event.getDataContext().getData(CommonDataKeys.PSI_FILE);
-            if (editor != null && editorFile != null) {
-                PsiElement referenceAt = editorFile.findElementAt(editor.getCaretModel().getOffset());
-                data.selectedClass = PsiTreeUtil.getContextOfType(referenceAt, PsiClass.class);
-                data.selectedMethod = PsiTreeUtil.getContextOfType(referenceAt, PsiMethod.class);
-            }
-            return data;
-        }
-    }
 }

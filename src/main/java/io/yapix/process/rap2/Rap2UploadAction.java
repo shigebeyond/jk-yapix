@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.project.Project;
 import io.yapix.action.AbstractAction;
+import io.yapix.action.ApiUploadResult;
 import io.yapix.base.sdk.rap2.Rap2Client;
 import io.yapix.base.sdk.rap2.model.Rap2Interface;
 import io.yapix.base.sdk.rap2.request.Rap2TestResult.Code;

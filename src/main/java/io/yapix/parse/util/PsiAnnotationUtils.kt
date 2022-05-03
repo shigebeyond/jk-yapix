@@ -1,6 +1,7 @@
 package io.yapix.parse.util
 
 import com.google.common.collect.Lists
+import com.google.gson.GsonBuilder
 import com.intellij.psi.*
 import com.intellij.psi.impl.JavaConstantExpressionEvaluator
 import io.yapix.parse.util.PsiFieldUtils.getFieldDefaultValue
@@ -9,6 +10,9 @@ import io.yapix.parse.util.PsiFieldUtils.getFieldDefaultValue
  * 注解相关工具类
  */
 object PsiAnnotationUtils {
+
+    val gson = GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create()
+
     /**
      * 有指定注解
      */
@@ -111,5 +115,42 @@ object PsiAnnotationUtils {
             return getFieldDefaultValue(resolve)
 
         return ""
+    }
+
+    /**
+     * 获得注解的备注，包含注解的属性名与属性值
+     *    如 @net.jkcode.jksoa.rpc.client.combiner.annotation.GroupCombine={"batchMethod":"listUsersByNameAsync","reqArgField":"name","respField":"","one2one":"true","flushQuota":"100","flushTimeoutMillis":"100"}
+     */
+    fun getAnnotationRemark(ann: PsiAnnotation): String? {
+        // 1 注解的代码，如 @GroupCombine("listUsersByNameAsync", "name", "", true, 100, 100)
+        //return ann.text
+
+        // 2 包含注解的属性名与属性值, 如 @net.jkcode.jksoa.rpc.client.combiner.annotation.GroupCombine{"batchMethod":"listUsersByNameAsync","reqArgField":"name","respField":"","one2one":"true","flushQuota":"100","flushTimeoutMillis":"100"}
+        if(ann.qualifiedName == null)
+            return null
+        val attrs = getAnnotationAttributeMap(ann, true)
+        return "@" + ann.qualifiedName + "=" + gson.toJson(attrs)
+    }
+
+    /**
+     * 获得注解实例的属性值
+     * @param ann
+     * @param withDefault 是否包含 未填但有默认值的属性
+     * @return Map<属性名, 属性值>
+     */
+    public fun getAnnotationAttributeMap(ann: PsiAnnotation, withDefault: Boolean): Map<String?, String?> {
+        // 1 填写值的属性，不包含[未填但有默认值的属性]
+        if(!withDefault)
+            return ann.parameterList.attributes.associate {
+            it.name to it.literalValue
+        }
+
+        // 2 所有属性(包含默认值的属性)
+        val annClass = PsiUtils.findPsiClass(ann.project, null, ann.qualifiedName!!)!!
+        // 方法名即属性名
+        return annClass.methods.associate { method ->
+            val attrName = method.name
+            attrName to ann.findAttributeValue(attrName)?.text
+        }
     }
 }

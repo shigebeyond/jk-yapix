@@ -2,10 +2,7 @@ package io.yapix.parse.util
 
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiArrayType
-import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiPrimitiveType
-import com.intellij.psi.PsiType
+import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiClassReferenceType
 import com.intellij.psi.util.PsiTypesUtil
 import io.yapix.model.DataTypes
@@ -16,6 +13,21 @@ import io.yapix.parse.parser.DataTypeParser
  * PsiType相关工具.
  */
 object PsiTypeUtils {
+
+    /**
+     * 获得 PsiClassReferenceType/PsiType 引用的类
+     */
+    public fun getRefClass(type: PsiType?, element: PsiDocCommentOwner): String {
+        if(type == null)
+            return ""
+        val clazz = type.toString() // PsiType:类
+            .substringAfter(':') // 类
+        // 原始类型
+        if(PsiTypeUtils.isPrimitive(type))
+            return clazz
+        // 对象类型
+        return PsiLinkUtils.getLinkClass(element, clazz)?.qualifiedName ?: "?"
+    }
 
     /**
      * 原始类型映射
@@ -50,7 +62,6 @@ object PsiTypeUtils {
      * 是否是原始类型
      */
     fun isPrimitive(type: PsiType): Boolean {
-        PsiPrimitiveType.LONG
         return type is PsiPrimitiveType
     }
 

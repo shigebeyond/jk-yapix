@@ -1,6 +1,5 @@
 package io.yapix.parse.util
 
-import com.google.common.collect.Lists
 import com.intellij.lang.jvm.JvmModifier
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
@@ -10,11 +9,16 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.PsiShortNamesCache
 import net.jkcode.jkutil.common.getFunction
 import org.jetbrains.kotlin.asJava.elements.FakeFileForLightClass
-import org.jetbrains.kotlin.psi.KtFile
-import java.util.*
-import java.util.function.IntFunction
 
 object PsiUtils {
+
+    /**
+     * 获得目录路径
+     */
+    public fun getDirectory(element: PsiDocCommentOwner): String {
+        return element.containingFile.containingDirectory.toString() // PsiDirectory:目录路径
+            .substringAfter(':') // 目录路径
+    }
 
     /**
      * 获得包名

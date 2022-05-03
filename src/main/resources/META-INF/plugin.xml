@@ -4,8 +4,8 @@
     <vendor url="https://github.com/jetplugins">Jetplugins</vendor>
 
     <description><![CDATA[
-        Generate API documents to any place: YApi, Rap2, Eolinker, etc.<br>
-        一键生成接口文档, 上传到YApi, Rap2, Eolinker等<br>
+        Generate (spring mvc/jkmvc/jksoa) API documents to any place: YApi, Rap2, Eolinker, etc.<br>
+        一键生成(spring mvc/jkmvc/jksoa)的接口文档, 上传到YApi, Rap2, Eolinker等<br>
         <p>
             <a href="https://github.com/jetplugins/yapix">GitHub</a> |
             <a href="https://github.com/jetplugins/yapix/issues">Issues</a>
@@ -19,6 +19,7 @@
             <li>Upload to ShowDoc platform.</li>
             <li>Export to markdown.</li>
             <li>Copy as cURL.</li>
+            <li>Generate php mapping class from jksoa rpc interface.</li>
         </ul>
         <img src="https://raw.githubusercontent.com/jetplugins/yapix/main/docs/screenshots.gif" height="360">
     ]]></description>
@@ -77,6 +78,7 @@
             <action id="yapix.CopyAsCurlAction" class="io.yapix.process.curl.CopyAsCurlAction"/>
             <action id="yapix.CopyAsMarkdownAction" class="io.yapix.process.markdown.CopyAsMarkdownAction"/>
             <action id="yapix.OpenSettings" class="io.yapix.action.OpenSettingsAction" text="Open Settings"/>
+            <action id="yapix.JksoaPhpMappingAction" class="io.yapix.process.jksoa.JksoaPhpMappingAction"/>
         </group>
 
         <!-- 配置文件转换菜单：过渡支持，协助yapi.xml文件转换.yapi, 未来会移除 -->

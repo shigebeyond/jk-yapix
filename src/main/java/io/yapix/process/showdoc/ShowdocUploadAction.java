@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.project.Project;
 import io.yapix.action.AbstractAction;
+import io.yapix.action.ApiUploadResult;
 import io.yapix.base.sdk.showdoc.ShowdocClient;
 import io.yapix.base.sdk.showdoc.model.ShowdocTestResult.Code;
 import io.yapix.base.sdk.showdoc.model.ShowdocUpdateResponse;
