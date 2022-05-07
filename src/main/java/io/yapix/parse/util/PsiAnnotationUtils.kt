@@ -150,7 +150,8 @@ object PsiAnnotationUtils {
         // 方法名即属性名
         return annClass.methods.associate { method ->
             val attrName = method.name
-            attrName to ann.findAttributeValue(attrName)?.text
+            attrName to ann.findAttributeValue(attrName)?.text // getText() 会将值转字符串,如果值自身是字符串,则会包一个双引号,如 10 -> "10", "methodName" -> "\"methodName\""
+                ?.replace("\"", "") // 去掉多余的双引号
         }
     }
 }

@@ -38,7 +38,7 @@ class JksoaPhpMappingAction : AnAction() {
             val dir = PsiUtils.getDirectory(psiClass) // 目录
             File("$dir/${psiClass.name}.php").writeText(phpCode)
         }
-        NotificationUtils.notifyInfo(ACTION_TEXT, ACTION_TEXT + " success")
+        NotificationUtils.notifyInfo(ACTION_TEXT, ACTION_TEXT + " success: " + psiClasses.joinToString { it.name!! })
     }
 
     override fun update(e: AnActionEvent) {
