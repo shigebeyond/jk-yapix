@@ -67,7 +67,7 @@ public class ConvertYapiXmlAction extends AnAction {
         if (config.getReturnUnwrapTypes() != null) {
             properties.setProperty("returnUnwrapTypes", StringUtils.join(config.getReturnUnwrapTypes(), ","));
         }
-        FileUtilsExt.writeProperties(file, properties, " https://github.com/jetplugins/yapix/blob/main/docs/GUIDE.md");
+        FileUtilsExt.writeProperties(file, properties, " https://github.com/shigebeyond/jk-yapix/blob/main/docs/GUIDE.md");
     }
 
     @Override

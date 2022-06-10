@@ -1,14 +1,14 @@
 <idea-plugin>
-    <id>yapix</id>
-    <name>Yapi X</name>
+    <id>jk-yapix</id>
+    <name>jk-YapiX</name>
     <vendor url="https://github.com/jetplugins">Jetplugins</vendor>
 
     <description><![CDATA[
-        Generate (spring mvc/jkmvc/jksoa) API documents to any place: YApi, Rap2, Eolinker, etc.<br>
-        一键生成(spring mvc/jkmvc/jksoa)的接口文档, 上传到YApi, Rap2, Eolinker等<br>
+        1. Generate (spring mvc/jkmvc/jksoa) API documents to any place: YApi, Rap2, Eolinker, etc; 2. Generate php mapping class from jksoa rpc interface<br>
+        1. 一键生成(spring mvc/jkmvc/jksoa)的接口文档, 上传到YApi, Rap2, Eolinker等; 2. 根据jksoa的java接口类, 生成php映射类, 用于给php调用<br>
         <p>
-            <a href="https://github.com/jetplugins/yapix">GitHub</a> |
-            <a href="https://github.com/jetplugins/yapix/issues">Issues</a>
+            <a href="https://github.com/shigebeyond/jk-yapix">GitHub</a> |
+            <a href="https://github.com/shigebeyond/jk-yapix/issues">Issues</a>
         </p>
         <h2>Features</h2>
         <ul>
