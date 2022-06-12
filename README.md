@@ -1,9 +1,9 @@
 # jk-yapix 改造文档
 > 先向yapix作者致谢，本插件是基于[yapix](https://github.com/jetplugins/yapix) 重构与改造，支持以下新的特性
 
-**支持解析kotlin代码**
+**1 支持解析kotlin代码**
 
-**支持导出jkmvc框架的api接口**
+**2 支持导出jkmvc框架的api接口**
 
 从jkmvc框架的controller类的javadoc中导出api接口信息:
 1. 请求参数格式为 `@param 参数名*:类型=默认值`，其中`*`表示必填
@@ -23,14 +23,23 @@ public fun detail()
 1. 写死post方法
 2. 不支持json提交，只支持form提交
 
-**支持类短名, 即省略包名**
+使用
+![](docs/jkmvc.png)
+
+**3 支持根据jksoa框架中的java服务接口来生成php映射类**
+使用
+![](docs/gen-php-mapping.png)
+
+java服务类 vs 生成的php映射类
+![](docs/compare-java-php.png)
+**4 支持类短名, 即省略包名**
 
 适用于于以下3种类: 
 1. import的类
 2. 当前包的类
 3. java.util包的类
 
-**重构优化**
+**5 重构优化**
 1. 抽象`IApiParser`类族，方便支持其他web框架的api提取
 2. 抽象`IPsiDocCommentHelper`类族，统一与兼容java/kotlin的注释解析
 3. 优化`PsiLinkUtils`, 支持根据类短名来获得psi类，方便类引用
@@ -55,7 +64,7 @@ public fun detail()
 - [x] 导出markdown文件
 - [x] 复制为cURL命令
 
-<img src="docs/screenshots.gif" height="360">
+![](docs/screenshots.gif)
 
 ## 使用
 1. 安装: 打开Idea -> File -> Settings -> Plugins, 搜索: Yapi X
